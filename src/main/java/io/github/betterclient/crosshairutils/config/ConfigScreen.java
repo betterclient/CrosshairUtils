@@ -63,7 +63,9 @@ public class ConfigScreen extends Screen {
         crosshairHexBox.setFilter(s -> s.matches("^#?[0-9a-fA-F]*$"));
         crosshairHexBox.setValue(String.format("#%06x", Config.getInstance().getCrosshairColorJava().getRGB() & 0xFFFFFF));
         crosshairHexBox.setResponder(value -> {
-            Config.getInstance().setCroshairColor(Color.decode(value));
+            try {
+                Config.getInstance().setCroshairColor(Color.decode(value));
+            } catch (Exception ignored) {} //ignore normal typing
         });
         addRenderableWidget(crosshairHexBox);
 
@@ -77,7 +79,9 @@ public class ConfigScreen extends Screen {
         attackIndicatorHexBox.setFilter(s -> s.matches("^#?[0-9a-fA-F]*$"));
         attackIndicatorHexBox.setValue(String.format("#%06x", Config.getInstance().getAttackIndicatorColorJava().getRGB() & 0xFFFFFF));
         attackIndicatorHexBox.setResponder(value -> {
-            Config.getInstance().setAttackIndicatorColor(Color.decode(value));
+            try {
+                Config.getInstance().setAttackIndicatorColor(Color.decode(value));
+            } catch (Exception ignored) {} //ignore normal typing
         });
         addRenderableWidget(attackIndicatorHexBox);
 
