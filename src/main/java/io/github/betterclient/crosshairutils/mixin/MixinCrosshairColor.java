@@ -1,6 +1,7 @@
 package io.github.betterclient.crosshairutils.mixin;
 
 import com.mojang.blaze3d.pipeline.RenderPipeline;
+import io.github.betterclient.crosshairutils.CrosshairUtils;
 import io.github.betterclient.crosshairutils.config.Config;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphics;
@@ -17,12 +18,22 @@ public class MixinCrosshairColor {
     @Redirect(method = "renderCrosshair", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;blitSprite(Lcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/resources/Identifier;IIII)V", ordinal = 0))
     public void onRenderCrosshair(GuiGraphics instance, RenderPipeline renderPipeline, Identifier identifier, int i, int j, int k, int l) {
         Config.Color crosshairColor = config.getCrosshairColor();
-        instance.blitSprite(renderPipeline, identifier, i, j, k, l, ARGB.color(
-                crosshairColor.alpha(),
-                crosshairColor.red(),
-                crosshairColor.green(),
-                crosshairColor.blue()
-        ));
+        if (CrosshairUtils.customTextures.contains(identifier)) {
+            instance.blit(
+                    renderPipeline,
+                    identifier,
+                    i, j, 0f, 0f,
+                    k, l, k, l, k, l,
+                    ARGB.color(crosshairColor.alpha(), crosshairColor.red(), crosshairColor.green(), crosshairColor.blue())
+            );
+        } else {
+            instance.blitSprite(renderPipeline, identifier, i, j, k, l, ARGB.color(
+                    crosshairColor.alpha(),
+                    crosshairColor.red(),
+                    crosshairColor.green(),
+                    crosshairColor.blue()
+            ));
+        }
     }
 
     @Redirect(method = "renderCrosshair", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;blitSprite(Lcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/resources/Identifier;IIII)V", ordinal = 1))

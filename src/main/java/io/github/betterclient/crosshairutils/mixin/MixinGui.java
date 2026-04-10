@@ -4,6 +4,7 @@ import com.mojang.blaze3d.pipeline.BlendFunction;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.DestFactor;
 import com.mojang.blaze3d.platform.SourceFactor;
+import io.github.betterclient.crosshairutils.CrosshairUtils;
 import io.github.betterclient.crosshairutils.config.Config;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
@@ -56,9 +57,9 @@ public class MixinGui {
     public Identifier redirectCrosshairSprite() {
         Minecraft mc = Minecraft.getInstance();
         return switch (mc.hitResult.getType()) {
-            case MISS -> getId(config.getShape());
-            case BLOCK -> getId(config.getShapeAttackBlock());
-            case ENTITY -> getId(config.getShapeAttackEntity());
+            case MISS -> getId(config.getShape(), CrosshairUtils.CUSTOM_MISS);
+            case BLOCK -> getId(config.getShapeAttackBlock(), CrosshairUtils.CUSTOM_BLOCK);
+            case ENTITY -> getId(config.getShapeAttackEntity(), CrosshairUtils.CUSTOM_ENTITY);
         };
     }
 
@@ -74,13 +75,15 @@ public class MixinGui {
     private static Identifier ARROW_CROSS = Identifier.tryBuild("crosshairutils", "hud/arrow_crosshair");
     private static Identifier DOT_CROSS = Identifier.tryBuild("crosshairutils", "hud/dot_crosshair");
     private static Identifier CIRCLE_CROSS = Identifier.tryBuild("crosshairutils", "hud/circle_crosshair");
+
     @Unique
-    private Identifier getId(Config.CrossShape shape) {
+    private Identifier getId(Config.CrossShape shape, Identifier customName) {
         return switch (shape) {
             case VANILLA -> CROSSHAIR_SPRITE;
             case ARROW -> ARROW_CROSS;
             case DOT -> DOT_CROSS;
             case CIRCLE -> CIRCLE_CROSS;
+            case CUSTOM -> customName;
         };
     }
 }

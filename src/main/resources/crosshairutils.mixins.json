@@ -8,7 +8,8 @@
   "client": [
     "MixinCrosshairColor",
     "MixinGui",
-    "MixinMinecraft"
+    "MixinMinecraft",
+    "MixinSplashOverlay"
   ],
   "injectors": {
     "defaultRequire": 1

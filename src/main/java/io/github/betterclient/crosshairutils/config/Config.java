@@ -3,11 +3,14 @@ package io.github.betterclient.crosshairutils.config;
 import io.github.betterclient.crosshairutils.CrosshairUtils;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.resources.Identifier;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.awt.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+
+import static io.github.betterclient.crosshairutils.CrosshairUtils.CUSTOM_TEXTURE_SIZE;
 
 public class Config {
     private boolean renderCrosshair = true;
@@ -17,8 +20,13 @@ public class Config {
     private Color attackIndicatorColor = new Color(255, 255, 255, 255);
 
     private CrossShape shape = CrossShape.VANILLA;
+    private boolean[][] customShape = new boolean[CUSTOM_TEXTURE_SIZE][CUSTOM_TEXTURE_SIZE];
+
     private CrossShape shapeAttackEntity = CrossShape.VANILLA;
+    private boolean[][] customEntityShape = new boolean[CUSTOM_TEXTURE_SIZE][CUSTOM_TEXTURE_SIZE];
+
     private CrossShape shapeAttackBlock = CrossShape.VANILLA;
+    private boolean[][] customBlockShape =  new boolean[CUSTOM_TEXTURE_SIZE][CUSTOM_TEXTURE_SIZE];
 
     public boolean shouldRenderCrosshair() {
         return renderCrosshair;
@@ -85,6 +93,14 @@ public class Config {
         return shapeAttackBlock;
     }
 
+    public boolean[][] getCustomShape(EditShapeScreen.Mode mode) {
+        return switch (mode) {
+            case NORMAL -> customShape;
+            case ATTACK_ENTITY -> customEntityShape;
+            case ATTACK_BLOCK -> customBlockShape;
+        };
+    }
+
     public void setShapeAttackBlock(CrossShape shapeAttackBlock) {
         this.shapeAttackBlock = shapeAttackBlock;
     }
@@ -119,8 +135,13 @@ public class Config {
         attackIndicatorColor = new Color(a.getRed(), a.getGreen(), a.getBlue(), a.getAlpha());
 
         shape = fromStr(obj.optString("shape", "vanilla"));
+        customShape = fromStr(obj.optString("customShape", "0"), customShape);
+
         shapeAttackEntity = fromStr(obj.optString("shapeAttackEntity", "vanilla"));
+        customEntityShape = fromStr(obj.optString("customEntityShape", "0"), customEntityShape);
+
         shapeAttackBlock = fromStr(obj.optString("shapeAttackBlock", "vanilla"));
+        customBlockShape = fromStr(obj.optString("customBlockShape", "0"), customBlockShape);
     }
 
     private CrossShape fromStr(String s) {
@@ -128,6 +149,7 @@ public class Config {
             case "arrow" -> CrossShape.ARROW;
             case "dot" -> CrossShape.DOT;
             case "circle" -> CrossShape.CIRCLE;
+            case "custom" -> CrossShape.CUSTOM;
             default -> CrossShape.VANILLA;
         };
     }
@@ -137,8 +159,27 @@ public class Config {
             case ARROW -> "arrow";
             case DOT -> "dot";
             case CIRCLE -> "circle";
+            case CUSTOM -> "custom";
             default -> "vanilla";
         };
+    }
+
+    private String toStr0(boolean[][] shape) {
+        return new JSONArray(shape).toString();
+    }
+
+    private boolean[][] fromStr(String str, boolean[][] defaultValue) {
+        if (str.equals("0")) return defaultValue;;
+        JSONArray outer = new JSONArray(str);
+        boolean[][] shape = new boolean[outer.length()][];
+        for (int i = 0; i < outer.length(); i++) {
+            JSONArray inner = outer.getJSONArray(i);
+            shape[i] = new boolean[inner.length()];
+            for (int j = 0; j < inner.length(); j++) {
+                shape[i][j] = inner.getBoolean(j);
+            }
+        }
+        return shape;
     }
 
     public void saveConfig() {
@@ -154,8 +195,13 @@ public class Config {
                     attackIndicatorColor.red, attackIndicatorColor.green, crosshairColor.blue, crosshairColor.alpha
             ).getRGB());
             obj.put("shape", toStr(shape));
+            obj.put("customShape", toStr0(customShape));
+
             obj.put("shapeAttackEntity", toStr(shapeAttackEntity));
+            obj.put("customEntityShape", toStr0(customEntityShape));
+
             obj.put("shapeAttackBlock", toStr(shapeAttackBlock));
+            obj.put("customBlockShape", toStr0(customBlockShape));
 
             if (Files.exists(config)) Files.delete(config);
             Files.writeString(config, obj.toString(4));
@@ -169,6 +215,6 @@ public class Config {
     }
     public record Color(int red, int green, int blue, int alpha) { }
     public enum CrossShape {
-        VANILLA, ARROW, DOT, CIRCLE
+        VANILLA, ARROW, DOT, CIRCLE, CUSTOM
     }
 }
