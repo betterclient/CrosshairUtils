@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "crosshairutils",
+  "version": "${version}",
+  "name": "CrosshairUtils",
+  "description": "",
+  "authors": [
+    "BetterClient"
+  ],
+  "contact": {},
+  "license": "MIT",
+  "icon": "assets/crosshairutils/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "io.github.betterclient.crosshairutils.CrosshairUtils"
+    ]
+  },
+  "mixins": [
+    "crosshairutils.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric-api": "*",
+    "minecraft": "${minecraft_version}"
+  }
+}
