@@ -9,6 +9,7 @@ import org.json.JSONObject;
 import java.awt.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Base64;
 
 import static io.github.betterclient.crosshairutils.CrosshairUtils.CUSTOM_TEXTURE_SIZE;
 
@@ -164,22 +165,34 @@ public class Config {
         };
     }
 
-    private String toStr0(boolean[][] shape) {
-        return new JSONArray(shape).toString();
+    String toStr0(boolean[][] shape) {
+        int rows = shape.length, cols = rows > 0 ? shape[0].length : 0;
+        byte[] data = new byte[2 + (rows * cols + 7) / 8];
+        data[0] = (byte) rows;
+        data[1] = (byte) cols;
+        int bit = 0;
+        for (boolean[] row : shape)
+            for (boolean cell : row) {
+                if (cell) data[2 + bit / 8] |= 1 << (bit % 8);
+                bit++;
+            }
+        return Base64.getEncoder().encodeToString(data);
     }
 
-    private boolean[][] fromStr(String str, boolean[][] defaultValue) {
-        if (str.equals("0")) return defaultValue;;
-        JSONArray outer = new JSONArray(str);
-        boolean[][] shape = new boolean[outer.length()][];
-        for (int i = 0; i < outer.length(); i++) {
-            JSONArray inner = outer.getJSONArray(i);
-            shape[i] = new boolean[inner.length()];
-            for (int j = 0; j < inner.length(); j++) {
-                shape[i][j] = inner.getBoolean(j);
-            }
+    boolean[][] fromStr(String str, boolean[][] defaultValue) {
+        if (str.equals("0")) return defaultValue;
+        try {
+            byte[] data = Base64.getDecoder().decode(str);
+            int rows = data[0] & 0xFF, cols = data[1] & 0xFF;
+            boolean[][] shape = new boolean[rows][cols];
+            int bit = 0;
+            for (int i = 0; i < rows; i++)
+                for (int j = 0; j < cols; j++)
+                    shape[i][j] = (data[2 + bit / 8] & (1 << (bit++ % 8))) != 0;
+            return shape;
+        } catch (Exception e) {
+            return defaultValue;
         }
-        return shape;
     }
 
     public void saveConfig() {

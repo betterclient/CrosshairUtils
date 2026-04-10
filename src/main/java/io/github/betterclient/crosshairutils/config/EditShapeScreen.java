@@ -4,12 +4,19 @@ import io.github.betterclient.crosshairutils.CrosshairUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.SpriteIconButton;
+import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.NonNull;
 
 import java.awt.*;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.Objects;
 
 import static io.github.betterclient.crosshairutils.CrosshairUtils.CUSTOM_TEXTURE_SIZE;
 
@@ -129,7 +136,8 @@ public class EditShapeScreen extends Screen {
                 .builder(Component.literal("Shape: " + getShape().name()), button -> {
                     setShape(Config.CrossShape.values()[getShape().ordinal() == Config.CrossShape.values().length - 1 ? 0 : getShape().ordinal() + 1]);
 
-                    button.setMessage(Component.literal("Shape: " + getShape().name()));
+                    clearWidgets();
+                    init();
                 })
                 .pos(this.width / 2 + 5, topY)
                 .size(150, 20)
@@ -143,6 +151,80 @@ public class EditShapeScreen extends Screen {
                 .size(150, 20)
                 .build()
         );
+
+        if (getShape() != Config.CrossShape.CUSTOM) return;
+
+        //extra helper buttons
+        int iconSize = 20, spacing = 5, numButtons = 4;
+        int rightX = this.width - iconSize - 10;
+        int startY = (this.height - (numButtons * iconSize + (numButtons - 1) * spacing)) / 2;
+        boolean[][] realShape = config.getCustomShape(currentMode);
+
+        addIconButton(
+                rightX, startY, iconSize, "Copy code",
+                Identifier.tryBuild("crosshairutils", "menu/copy"),
+                btn -> {
+                    Minecraft.getInstance().keyboardHandler.setClipboard(config.toStr0(realShape));
+                }
+        );
+
+        addIconButton(
+                rightX, startY + (iconSize + spacing), iconSize, "Paste code from clipboard",
+                Identifier.tryBuild("crosshairutils", "menu/paste"),
+                btn -> {
+                    try {
+                        boolean[][] shape = config.fromStr(
+                                Minecraft.getInstance().keyboardHandler.getClipboard(), realShape);
+                        for (int x = 0; x < Math.min(shape.length, realShape.length); x++)
+                            System.arraycopy(shape[x], 0, realShape[x], 0,
+                                    Math.min(shape[x].length, realShape[x].length));
+                    } catch (IllegalArgumentException ignored) {}
+                }
+        );
+
+        addIconButton(
+                rightX, startY + 2 * (iconSize + spacing), iconSize, "Reset to vanilla",
+                Identifier.tryBuild("minecraft", "hud/crosshair"),
+                btn -> {
+                    askForConsent("Are you sure you wanna reset your custom crosshair?", () -> {
+                        for (boolean[] row : realShape) Arrays.fill(row, false);
+                        int mid = (realShape.length - 1) / 2;
+                        realShape[mid][mid] = true;
+                        for (int i = 1; i <= 4; i++) {
+                            realShape[mid][mid - i] = realShape[mid][mid + i] = true;
+                            realShape[mid - i][mid] = realShape[mid + i][mid] = true;
+                        }
+                    });
+                }
+        );
+
+        addIconButton(
+                rightX, startY + 3 * (iconSize + spacing), iconSize, "Clear",
+                Identifier.tryBuild("minecraft", "container/beacon/cancel"),
+                btn -> {
+                    askForConsent("Are you sure you wanna clear your custom crosshair?", () -> {
+                        for (boolean[] row : realShape) Arrays.fill(row, false);
+                    });
+                }
+        );
+    }
+
+    private void addIconButton(int x, int y, int size, String tooltip, Identifier sprite, Button.OnPress action) {
+        SpriteIconButton btn = SpriteIconButton
+                .builder(Component.literal(tooltip), action, true)
+                .size(size, size)
+                .withTootip()
+                .sprite(Objects.requireNonNull(sprite), 16, 16)
+                .build();
+        btn.setPosition(x, y);
+        addRenderableWidget(btn);
+    }
+
+    private void askForConsent(String text, Runnable task) {
+        Minecraft.getInstance().setScreen(new ConfirmScreen(t -> {
+            if (t) task.run();
+            Minecraft.getInstance().setScreen(this);
+        }, Component.empty(), Component.literal(text)));
     }
 
     public enum Mode {
