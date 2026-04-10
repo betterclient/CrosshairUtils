@@ -8,12 +8,14 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.ARGB;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(Gui.class)
 public class MixinCrosshairColor {
-    private static Config config = Config.getInstance();
+    @Unique
+    private static final Config config = Config.getInstance();
 
     @Redirect(method = "renderCrosshair", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;blitSprite(Lcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/resources/Identifier;IIII)V", ordinal = 0))
     public void onRenderCrosshair(GuiGraphics instance, RenderPipeline renderPipeline, Identifier identifier, int i, int j, int k, int l) {

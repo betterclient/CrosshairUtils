@@ -2,8 +2,6 @@ package io.github.betterclient.crosshairutils.config;
 
 import io.github.betterclient.crosshairutils.CrosshairUtils;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.resources.Identifier;
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.awt.*;

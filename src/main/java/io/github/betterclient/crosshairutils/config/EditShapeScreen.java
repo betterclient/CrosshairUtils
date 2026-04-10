@@ -13,9 +13,7 @@ import net.minecraft.resources.Identifier;
 import org.jspecify.annotations.NonNull;
 
 import java.awt.*;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.Base64;
 import java.util.Objects;
 
 import static io.github.betterclient.crosshairutils.CrosshairUtils.CUSTOM_TEXTURE_SIZE;
@@ -23,7 +21,7 @@ import static io.github.betterclient.crosshairutils.CrosshairUtils.CUSTOM_TEXTUR
 public class EditShapeScreen extends Screen {
     private final Screen parent;
     private Mode currentMode = Mode.NORMAL;
-    private Config config = Config.getInstance();
+    private final Config config = Config.getInstance();
     private boolean mouseLeftDown = false;
     private boolean mouseRightDown = false;
 
@@ -33,7 +31,7 @@ public class EditShapeScreen extends Screen {
     }
 
     @Override
-    public void render(GuiGraphics guiGraphics, int i, int j, float f) {
+    public void render(@NonNull GuiGraphics guiGraphics, int i, int j, float f) {
         super.render(guiGraphics, i, j, f);
 
         if (getShape() != Config.CrossShape.CUSTOM) return;
@@ -228,7 +226,7 @@ public class EditShapeScreen extends Screen {
     }
 
     public enum Mode {
-        NORMAL("Normal"), ATTACK_ENTITY("Attacking Entity"), ATTACK_BLOCK("Attacking Block");;
+        NORMAL("Normal"), ATTACK_ENTITY("Attacking Entity"), ATTACK_BLOCK("Attacking Block");
 
         public final String text;
         Mode(String text) {

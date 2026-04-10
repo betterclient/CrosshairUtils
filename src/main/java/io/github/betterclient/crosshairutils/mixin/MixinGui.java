@@ -29,7 +29,7 @@ public class MixinGui {
     @Final
     private static Identifier CROSSHAIR_SPRITE;
     @Unique
-    private static Config config = Config.getInstance();
+    private static final Config config = Config.getInstance();
     @Unique
     private static final RenderPipeline CROSSHAIR_ADDITIVE = RenderPipelines.register(
             RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
@@ -72,9 +72,12 @@ public class MixinGui {
         };
     }
 
-    private static Identifier ARROW_CROSS = Identifier.tryBuild("crosshairutils", "hud/arrow_crosshair");
-    private static Identifier DOT_CROSS = Identifier.tryBuild("crosshairutils", "hud/dot_crosshair");
-    private static Identifier CIRCLE_CROSS = Identifier.tryBuild("crosshairutils", "hud/circle_crosshair");
+    @Unique
+    private static final Identifier ARROW_CROSS = Identifier.tryBuild("crosshairutils", "hud/arrow_crosshair");
+    @Unique
+    private static final Identifier DOT_CROSS = Identifier.tryBuild("crosshairutils", "hud/dot_crosshair");
+    @Unique
+    private static final Identifier CIRCLE_CROSS = Identifier.tryBuild("crosshairutils", "hud/circle_crosshair");
 
     @Unique
     private Identifier getId(Config.CrossShape shape, Identifier customName) {
