@@ -1,9 +1,7 @@
 package io.github.betterclient.crosshairutils;
 
 import com.mojang.blaze3d.platform.NativeImage;
-import io.github.betterclient.crosshairutils.config.Config;
 import net.fabricmc.api.ClientModInitializer;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.resources.Identifier;
 import org.slf4j.Logger;
@@ -32,6 +30,7 @@ public class CrosshairUtils implements ClientModInitializer {
         NativeImage nativeImage = texture.getPixels();
         for (int x = 0; x < CUSTOM_TEXTURE_SIZE; x++) {
             for (int y = 0; y < CUSTOM_TEXTURE_SIZE; y++) {
+                if (x >= customShape.length || y >= customShape[x].length) continue; //custom texture size got changed...
                 assert nativeImage != null;
                 nativeImage.setPixel(x, y, customShape[x][y] ? -1 : 0);
             }

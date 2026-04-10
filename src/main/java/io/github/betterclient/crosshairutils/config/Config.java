@@ -26,7 +26,7 @@ public class Config {
     private boolean[][] customEntityShape = new boolean[CUSTOM_TEXTURE_SIZE][CUSTOM_TEXTURE_SIZE];
 
     private CrossShape shapeAttackBlock = CrossShape.VANILLA;
-    private boolean[][] customBlockShape =  new boolean[CUSTOM_TEXTURE_SIZE][CUSTOM_TEXTURE_SIZE];
+    private boolean[][] customBlockShape = new boolean[CUSTOM_TEXTURE_SIZE][CUSTOM_TEXTURE_SIZE];
 
     public boolean shouldRenderCrosshair() {
         return renderCrosshair;

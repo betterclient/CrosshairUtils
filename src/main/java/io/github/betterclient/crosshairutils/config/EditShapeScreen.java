@@ -38,6 +38,8 @@ public class EditShapeScreen extends Screen {
         int startX = width / 2 - ((CUSTOM_TEXTURE_SIZE / 2) * GRID_WIDTH);
         int startY = height / 2 - ((CUSTOM_TEXTURE_SIZE / 2) * GRID_HEIGHT);
 
+        int centerIndex = (CUSTOM_TEXTURE_SIZE - 1) / 2;
+
         //draw background
         guiGraphics.fill(
                 startX - 8, startY - 8,
@@ -65,7 +67,7 @@ public class EditShapeScreen extends Screen {
 
                 guiGraphics.fill(currentX, currentY, currentX + 8, currentY + 8, (filled ? Color.GRAY : Color.DARK_GRAY).getRGB());
 
-                if (x == 7 && y == 7) {
+                if (x == centerIndex && y == centerIndex) {
                     int dotSize = 2;
                     int dotX = currentX + (8 - dotSize) / 2;
                     int dotY = currentY + (8 - dotSize) / 2;
