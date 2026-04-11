@@ -3,11 +3,13 @@
   "id": "crosshairutils",
   "version": "${version}",
   "name": "CrosshairUtils",
-  "description": "",
+  "description": "Useful settings for your crosshair",
   "authors": [
     "BetterClient"
   ],
-  "contact": {},
+  "contact": {
+    "sources": "https://github.com/betterclient/CrosshairUtils"
+  },
   "license": "MIT",
   "icon": "assets/crosshairutils/icon.png",
   "environment": "client",
