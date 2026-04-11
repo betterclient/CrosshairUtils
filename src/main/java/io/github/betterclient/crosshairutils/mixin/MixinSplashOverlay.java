@@ -20,19 +20,19 @@ public class MixinSplashOverlay {
     private static void registerTextures(TextureManager textureManager, CallbackInfo ci) {
         Minecraft.getInstance().getTextureManager().register(
                 CrosshairUtils.CUSTOM_MISS,
-                CrosshairUtils.missTexture = new DynamicTexture(CUSTOM_TEXTURE_SIZE, CUSTOM_TEXTURE_SIZE, false)
+                CrosshairUtils.missTexture = new DynamicTexture(() -> "miss", CUSTOM_TEXTURE_SIZE, CUSTOM_TEXTURE_SIZE, false)
         );
         CrosshairUtils.load(Config.getInstance().getCustomShape(CrosshairMode.NORMAL), CrosshairUtils.missTexture);
 
         Minecraft.getInstance().getTextureManager().register(
                 CrosshairUtils.CUSTOM_ENTITY,
-                CrosshairUtils.entityTexture = new DynamicTexture(CUSTOM_TEXTURE_SIZE, CUSTOM_TEXTURE_SIZE, false)
+                CrosshairUtils.entityTexture = new DynamicTexture(() -> "entity", CUSTOM_TEXTURE_SIZE, CUSTOM_TEXTURE_SIZE, false)
         );
         CrosshairUtils.load(Config.getInstance().getCustomShape(CrosshairMode.ATTACK_ENTITY), CrosshairUtils.entityTexture);
 
         Minecraft.getInstance().getTextureManager().register(
                 CrosshairUtils.CUSTOM_BLOCK,
-                CrosshairUtils.blockTexture = new DynamicTexture(CUSTOM_TEXTURE_SIZE, CUSTOM_TEXTURE_SIZE, false)
+                CrosshairUtils.blockTexture = new DynamicTexture(() -> "block", CUSTOM_TEXTURE_SIZE, CUSTOM_TEXTURE_SIZE, false)
         );
         CrosshairUtils.load(Config.getInstance().getCustomShape(CrosshairMode.ATTACK_BLOCK), CrosshairUtils.blockTexture);
     }

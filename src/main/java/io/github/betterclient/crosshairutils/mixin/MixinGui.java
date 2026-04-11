@@ -1,7 +1,9 @@
 package io.github.betterclient.crosshairutils.mixin;
 
-import com.llamalad7.mixinextras.expression.Expression;
-import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.pipeline.BlendFunction;
+import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.platform.DestFactor;
+import com.mojang.blaze3d.platform.SourceFactor;
 import io.github.betterclient.crosshairutils.CrosshairUtils;
 import io.github.betterclient.crosshairutils.config.Config;
 import io.github.betterclient.crosshairutils.config.CrossShape;
@@ -9,9 +11,8 @@ import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.RenderStateShard;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.ResourceLocation;
-import org.lwjgl.opengl.GL11;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -47,6 +48,15 @@ public class MixinGui {
         };
     }
 
+    @Redirect(method = "renderCrosshair", at = @At(value = "FIELD", target = "Lnet/minecraft/client/renderer/RenderPipelines;CROSSHAIR:Lcom/mojang/blaze3d/pipeline/RenderPipeline;", opcode = Opcodes.GETSTATIC))
+    public RenderPipeline redirectCrosshairPipeline() {
+        return switch (config.getCrosshairBlendMode()) {
+            case NORMAL -> CROSSHAIR_NORMAL;
+            case ADDITIVE -> CROSSHAIR_ADDITIVE;
+            case INVERT -> RenderPipelines.CROSSHAIR;
+        };
+    }
+
     @Unique
     private static final ResourceLocation ARROW_CROSS = ResourceLocation.tryBuild("crosshairutils", "hud/arrow_crosshair");
     @Unique
@@ -64,4 +74,20 @@ public class MixinGui {
             case CUSTOM -> customName;
         };
     }
+
+    @Unique
+    private static final RenderPipeline CROSSHAIR_ADDITIVE = RenderPipelines.register(
+            RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
+                    .withLocation("pipeline/crosshair_additive")
+                    .withBlend(BlendFunction.ADDITIVE)
+                    .build()
+    );
+
+    @Unique
+    private static final RenderPipeline CROSSHAIR_NORMAL = RenderPipelines.register(
+            RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
+                    .withLocation("pipeline/crosshair_normal")
+                    .withBlend(new BlendFunction(SourceFactor.ONE, DestFactor.ZERO))
+                    .build()
+    );
 }
