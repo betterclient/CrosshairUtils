@@ -5,10 +5,15 @@ import net.fabricmc.loader.api.FabricLoader;
 import org.json.JSONObject;
 
 import java.awt.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Base64;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 
 import static io.github.betterclient.crosshairutils.CrosshairUtils.CUSTOM_TEXTURE_SIZE;
 
@@ -174,24 +179,45 @@ public class Config {
                 buffer.putInt(cell);
             }
         }
-        return Base64.getEncoder().encodeToString(buffer.array());
+
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            GZIPOutputStream gzip = new GZIPOutputStream(baos);
+            gzip.write(buffer.array());
+            gzip.close();
+            return Base64.getEncoder().encodeToString(baos.toByteArray());
+        } catch (IOException e) {
+            return "0";
+        }
     }
 
     int[][] fromStr(String str, int[][] defaultValue) {
         if (str.equals("0")) return defaultValue;
         try {
-            byte[] data = Base64.getDecoder().decode(str);
-            ByteBuffer buffer = ByteBuffer.wrap(data);
+            byte[] compressed = Base64.getDecoder().decode(str);
+
+            ByteArrayInputStream bais = new ByteArrayInputStream(compressed);
+            GZIPInputStream gzip = new GZIPInputStream(bais);
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            byte[] tempBuffer = new byte[1024];
+            int len;
+            while ((len = gzip.read(tempBuffer)) > 0) {
+                out.write(tempBuffer, 0, len);
+            }
+            byte[] rawData = out.toByteArray();
+
+            ByteBuffer buffer = ByteBuffer.wrap(rawData);
             int rows = buffer.getInt();
             int cols = buffer.getInt();
             int[][] shape = new int[rows][cols];
+
             for (int i = 0; i < rows; i++) {
                 for (int j = 0; j < cols; j++) {
                     shape[i][j] = buffer.getInt();
                 }
             }
             return shape;
-        } catch (Throwable e) {
+        } catch (Exception e) {
             return defaultValue;
         }
     }

@@ -4,6 +4,7 @@ import io.github.betterclient.crosshairutils.CrosshairUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.SpriteIconButton;
 import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.Screen;
@@ -24,6 +25,7 @@ public class EditShapeScreen extends Screen {
     private final Config config = Config.getInstance();
     private boolean mouseLeftDown = false;
     private boolean mouseRightDown = false;
+    private int selectedColor = -1;
 
     public EditShapeScreen(Screen parent) {
         super(Component.empty());
@@ -35,6 +37,14 @@ public class EditShapeScreen extends Screen {
         super.render(guiGraphics, i, j, f);
 
         if (getShape() != Config.CrossShape.CUSTOM) return;
+
+        int leftX = 10;
+        int iconSize = 20;
+        int indicatorY = 15;
+
+        guiGraphics.drawString(this.font, "Selected color", leftX, indicatorY - 10, Color.WHITE.getRGB());
+        guiGraphics.fill(leftX - 1, indicatorY - 1, leftX + iconSize + 1, indicatorY + iconSize + 1, Color.GRAY.getRGB());
+        guiGraphics.fill(leftX, indicatorY, leftX + iconSize, indicatorY + iconSize, selectedColor);
 
         //CUSTOM_TEXTURE_SIZE
         //render 16x16 grid
@@ -62,8 +72,8 @@ public class EditShapeScreen extends Screen {
 
                 if (isMouseOver(i, j, currentX, currentY, currentX + 8, currentY + 8)) {
                     if (mouseLeftDown) {
-                        customShape[x][y] = -1; //todo: be able to change this
-                        color = -1;
+                        customShape[x][y] = selectedColor;
+                        color = selectedColor;
                     } else if (mouseRightDown) {
                         customShape[x][y] = 0;
                         color = 0;
@@ -152,6 +162,76 @@ public class EditShapeScreen extends Screen {
 
         if (getShape() != Config.CrossShape.CUSTOM) return;
 
+        initRightButtons();
+        initLeftWidgets();
+    }
+    private void initLeftWidgets() {
+        int iconSize = 20, spacing = 4;
+        int leftX = 10;
+        int numLeftButtons = 4;
+        int startY = (this.height - (numLeftButtons * iconSize + (numLeftButtons - 1) * spacing)) / 2;
+
+        addIconButton(
+                leftX, startY, iconSize, null,
+                Identifier.tryBuild("crosshairutils", "menu/white"),
+                button -> {
+                    selectedColor = Color.WHITE.getRGB();
+                }
+        );
+        int index = 1;
+
+        addIconButton(
+                leftX, startY + ((index++) * (iconSize + spacing)), iconSize, null,
+                Identifier.tryBuild("crosshairutils", "menu/red"),
+                button -> {
+                    selectedColor = Color.RED.getRGB();
+                }
+        );
+
+        addIconButton(
+                leftX, startY + ((index++) * (iconSize + spacing)), iconSize, null,
+                Identifier.tryBuild("crosshairutils", "menu/green"),
+                button -> {
+                    selectedColor = Color.GREEN.getRGB();
+                }
+        );
+
+        addIconButton(
+                leftX, startY + ((index++) * (iconSize + spacing)), iconSize, null,
+                Identifier.tryBuild("crosshairutils", "menu/blue"),
+                button -> {
+                    selectedColor = Color.BLUE.getRGB();
+                }
+        );
+
+        int hexY = startY + ((index + 1) * (iconSize + spacing));
+
+        EditBox hexBox = new EditBox(this.font, leftX, hexY, 50, iconSize, Component.literal("Hex Color"));
+        hexBox.setMaxLength(9);
+        hexBox.setValue("#FFFFFF");
+        hexBox.setFilter(s -> s.matches("^#?[0-9a-fA-F]*$"));
+        addRenderableWidget(hexBox);
+
+        addRenderableWidget(Button
+                .builder(Component.literal("Set"), button -> {
+                    String hex = hexBox.getValue().replace("#", "").trim();
+                    try {
+                        if (hex.length() == 6) {
+                            selectedColor = 0xFF000000 | Integer.parseInt(hex, 16);
+                        } else if (hex.length() == 8) {
+                            selectedColor = (int) Long.parseLong(hex, 16);
+                        }
+                    } catch (NumberFormatException ignored) {
+
+                    }
+                })
+                .pos(leftX + 50 + 2, hexY)
+                .size(30, iconSize)
+                .build()
+        );
+    }
+
+    private void initRightButtons() {
         //extra helper buttons
         int iconSize = 20, spacing = 5, numButtons = 4;
         int rightX = this.width - iconSize - 10;
@@ -208,12 +288,13 @@ public class EditShapeScreen extends Screen {
     }
 
     private void addIconButton(int x, int y, int size, String tooltip, Identifier sprite, Button.OnPress action) {
-        SpriteIconButton btn = SpriteIconButton
-                .builder(Component.literal(tooltip), action, true)
+        SpriteIconButton.Builder builder = SpriteIconButton
+                .builder(Component.literal(tooltip == null ? "" : tooltip), action, true)
                 .size(size, size)
-                .withTootip()
-                .sprite(Objects.requireNonNull(sprite), 16, 16)
-                .build();
+                .sprite(Objects.requireNonNull(sprite), 16, 16);
+        if (tooltip != null) builder.withTootip();
+
+        SpriteIconButton btn = builder.build();
         btn.setPosition(x, y);
         addRenderableWidget(btn);
     }
