@@ -1,6 +1,7 @@
 package io.github.betterclient.crosshairutils.mixin;
 
 import com.mojang.blaze3d.pipeline.BlendFunction;
+import com.mojang.blaze3d.pipeline.ColorTargetState;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.DestFactor;
 import com.mojang.blaze3d.platform.SourceFactor;
@@ -10,7 +11,7 @@ import io.github.betterclient.crosshairutils.config.CrossShape;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
 import org.objectweb.asm.Opcodes;
@@ -34,7 +35,7 @@ public class MixinGui {
     private static final RenderPipeline CROSSHAIR_ADDITIVE = RenderPipelines.register(
             RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
                     .withLocation("pipeline/crosshair_additive")
-                    .withBlend(BlendFunction.ADDITIVE)
+                    .withColorTargetState(new ColorTargetState(BlendFunction.ADDITIVE))
                     .build()
     );
 
@@ -42,18 +43,18 @@ public class MixinGui {
     private static final RenderPipeline CROSSHAIR_NORMAL = RenderPipelines.register(
             RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
                     .withLocation("pipeline/crosshair_normal")
-                    .withBlend(new BlendFunction(SourceFactor.ONE, DestFactor.ZERO))
+                    .withColorTargetState(new ColorTargetState(new BlendFunction(SourceFactor.ONE, DestFactor.ZERO)))
                     .build()
     );
 
-    @Inject(method = "renderCrosshair", at = @At("HEAD"), cancellable = true)
-    public void onRenderCrosshair(GuiGraphics guiGraphics, DeltaTracker deltaTracker, CallbackInfo ci) {
+    @Inject(method = "extractCrosshair", at = @At("HEAD"), cancellable = true)
+    public void onRenderCrosshair(GuiGraphicsExtractor graphics, DeltaTracker deltaTracker, CallbackInfo ci) {
         if (!config.shouldRenderCrosshair()) {
             ci.cancel();
         }
     }
 
-    @Redirect(method = "renderCrosshair", at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/Gui;CROSSHAIR_SPRITE:Lnet/minecraft/resources/Identifier;", opcode = Opcodes.GETSTATIC))
+    @Redirect(method = "extractCrosshair", at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/Gui;CROSSHAIR_SPRITE:Lnet/minecraft/resources/Identifier;", opcode = Opcodes.GETSTATIC))
     public Identifier redirectCrosshairSprite() {
         Minecraft mc = Minecraft.getInstance();
         return switch (mc.hitResult.getType()) {
@@ -63,7 +64,7 @@ public class MixinGui {
         };
     }
 
-    @Redirect(method = "renderCrosshair", at = @At(value = "FIELD", target = "Lnet/minecraft/client/renderer/RenderPipelines;CROSSHAIR:Lcom/mojang/blaze3d/pipeline/RenderPipeline;", opcode = Opcodes.GETSTATIC))
+    @Redirect(method = "extractCrosshair", at = @At(value = "FIELD", target = "Lnet/minecraft/client/renderer/RenderPipelines;CROSSHAIR:Lcom/mojang/blaze3d/pipeline/RenderPipeline;", opcode = Opcodes.GETSTATIC))
     public RenderPipeline injectCustomPipeline() {
         return switch (config.getCrosshairBlendMode()) {
             case NORMAL -> CROSSHAIR_NORMAL;

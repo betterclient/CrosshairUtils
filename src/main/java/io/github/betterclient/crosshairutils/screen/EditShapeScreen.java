@@ -6,7 +6,7 @@ import io.github.betterclient.crosshairutils.config.ConfigSerializer;
 import io.github.betterclient.crosshairutils.config.CrossShape;
 import io.github.betterclient.crosshairutils.config.CrosshairMode;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.SpriteIconButton;
@@ -37,8 +37,8 @@ public class EditShapeScreen extends Screen {
     }
 
     @Override
-    public void render(@NonNull GuiGraphics guiGraphics, int i, int j, float f) {
-        super.render(guiGraphics, i, j, f);
+    public void extractRenderState(@NonNull GuiGraphicsExtractor guiGraphics, int i, int j, float f) {
+        super.extractRenderState(guiGraphics, i, j, f);
 
         if (getShape() != CrossShape.CUSTOM) return;
 
@@ -46,7 +46,7 @@ public class EditShapeScreen extends Screen {
         int iconSize = 20;
         int indicatorY = 15;
 
-        guiGraphics.drawString(this.font, "Selected color", leftX, indicatorY - 10, Color.WHITE.getRGB());
+        guiGraphics.text(this.font, "Selected color", leftX, indicatorY - 10, Color.WHITE.getRGB());
         guiGraphics.fill(leftX - 1, indicatorY - 1, leftX + iconSize + 1, indicatorY + iconSize + 1, Color.GRAY.getRGB());
         guiGraphics.fill(leftX, indicatorY, leftX + iconSize, indicatorY + iconSize, selectedColor);
 
@@ -134,7 +134,7 @@ public class EditShapeScreen extends Screen {
         super.init();
         int topY = 20;
         addRenderableWidget(Button
-                .builder(Component.literal("Mode: " + currentMode.text), button -> {
+                .builder(Component.literal("Mode: " + currentMode.text), _ -> {
                     currentMode = CrosshairMode.values()[currentMode.ordinal() == CrosshairMode.values().length - 1 ? 0 : currentMode.ordinal() + 1];
                     clearWidgets();
                     init();
@@ -145,7 +145,7 @@ public class EditShapeScreen extends Screen {
         );
 
         addRenderableWidget(Button
-                .builder(Component.literal("Shape: " + getShape().name()), button -> {
+                .builder(Component.literal("Shape: " + getShape().name()), _ -> {
                     setShape(CrossShape.values()[getShape().ordinal() == CrossShape.values().length - 1 ? 0 : getShape().ordinal() + 1]);
 
                     clearWidgets();
@@ -158,7 +158,7 @@ public class EditShapeScreen extends Screen {
 
         int bottomY = this.height - 30;
         addRenderableWidget(Button
-                .builder(Component.literal("Done"), button -> Minecraft.getInstance().setScreen(parent))
+                .builder(Component.literal("Done"), _ -> Minecraft.getInstance().setScreen(parent))
                 .pos(this.width / 2 - 75, bottomY)
                 .size(150, 20)
                 .build()
@@ -178,7 +178,7 @@ public class EditShapeScreen extends Screen {
         addIconButton(
                 leftX, startY, iconSize, null,
                 Identifier.tryBuild("crosshairutils", "menu/white"),
-                button -> {
+                _ -> {
                     selectedColor = Color.WHITE.getRGB();
                 }
         );
@@ -187,7 +187,7 @@ public class EditShapeScreen extends Screen {
         addIconButton(
                 leftX, startY + ((index++) * (iconSize + spacing)), iconSize, null,
                 Identifier.tryBuild("crosshairutils", "menu/red"),
-                button -> {
+                _ -> {
                     selectedColor = Color.RED.getRGB();
                 }
         );
@@ -195,7 +195,7 @@ public class EditShapeScreen extends Screen {
         addIconButton(
                 leftX, startY + ((index++) * (iconSize + spacing)), iconSize, null,
                 Identifier.tryBuild("crosshairutils", "menu/green"),
-                button -> {
+                _ -> {
                     selectedColor = Color.GREEN.getRGB();
                 }
         );
@@ -203,21 +203,28 @@ public class EditShapeScreen extends Screen {
         addIconButton(
                 leftX, startY + ((index++) * (iconSize + spacing)), iconSize, null,
                 Identifier.tryBuild("crosshairutils", "menu/blue"),
-                button -> {
+                _ -> {
                     selectedColor = Color.BLUE.getRGB();
                 }
         );
 
         int hexY = startY + ((index + 1) * (iconSize + spacing));
 
-        EditBox hexBox = new EditBox(this.font, leftX, hexY, 50, iconSize, Component.literal("Hex Color"));
+        EditBox hexBox = new EditBox(this.font, leftX, hexY, 50, iconSize, Component.literal("Hex Color")) {
+            @Override
+            public void insertText(String input) {
+                String filtered = input.replaceAll("[^#0-9a-fA-F]", "");
+                if (!filtered.isEmpty()) {
+                    super.insertText(filtered);
+                }
+            }
+        };
         hexBox.setMaxLength(9);
         hexBox.setValue("#FFFFFF");
-        hexBox.setFilter(s -> s.matches("^#?[0-9a-fA-F]*$"));
         addRenderableWidget(hexBox);
 
         addRenderableWidget(Button
-                .builder(Component.literal("Set"), button -> {
+                .builder(Component.literal("Set"), _ -> {
                     String hex = hexBox.getValue().replace("#", "").trim();
                     try {
                         if (hex.length() == 6) {
@@ -245,7 +252,7 @@ public class EditShapeScreen extends Screen {
         addIconButton(
                 rightX, startY, iconSize, "Copy code",
                 Identifier.tryBuild("crosshairutils", "menu/copy"),
-                btn -> {
+                _ -> {
                     Minecraft.getInstance().keyboardHandler.setClipboard(ConfigSerializer.toStr0(realShape));
                 }
         );
@@ -253,7 +260,7 @@ public class EditShapeScreen extends Screen {
         addIconButton(
                 rightX, startY + (iconSize + spacing), iconSize, "Paste code from clipboard",
                 Identifier.tryBuild("crosshairutils", "menu/paste"),
-                btn -> {
+                _ -> {
                     try {
                         ConfigSerializer.readFromStr(Minecraft.getInstance().keyboardHandler.getClipboard(), realShape);
                     } catch (IllegalArgumentException ignored) {}
@@ -263,7 +270,7 @@ public class EditShapeScreen extends Screen {
         addIconButton(
                 rightX, startY + 2 * (iconSize + spacing), iconSize, "Reset to vanilla",
                 Identifier.tryBuild("minecraft", "hud/crosshair"),
-                btn -> {
+                _ -> {
                     askForConsent("Are you sure you wanna reset your custom crosshair?", () -> {
                         for (int[] row : realShape) Arrays.fill(row, 0);
                         int mid = (realShape.length - 1) / 2;
@@ -279,7 +286,7 @@ public class EditShapeScreen extends Screen {
         addIconButton(
                 rightX, startY + 3 * (iconSize + spacing), iconSize, "Clear",
                 Identifier.tryBuild("minecraft", "container/beacon/cancel"),
-                btn -> {
+                _ -> {
                     askForConsent("Are you sure you wanna clear your custom crosshair?", () -> {
                         for (int[] row : realShape) Arrays.fill(row, 0);
                     });

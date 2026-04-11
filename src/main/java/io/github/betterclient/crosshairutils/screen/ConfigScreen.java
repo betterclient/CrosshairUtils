@@ -30,7 +30,7 @@ public class ConfigScreen extends Screen {
         addRenderableWidget(Checkbox
                 .builder(Component.literal("Render crosshair"), this.font)
                 .pos(x, y)
-                .onValueChange((checkbox, bl) -> config.setShouldRenderCrosshair(bl))
+                .onValueChange((_, bl) -> config.setShouldRenderCrosshair(bl))
                 .selected(config.shouldRenderCrosshair())
                 .build()
         );
@@ -55,9 +55,16 @@ public class ConfigScreen extends Screen {
         addRenderableWidget(new StringWidget(x, y, width, height, Component.literal("Crosshair color (Hex):"), this.font));
         y += 16;
 
-        EditBox crosshairHexBox = new EditBox(this.font, x, y, width, height, Component.literal("Crosshair color"));
+        EditBox crosshairHexBox = new EditBox(this.font, x, y, width, height, Component.literal("Crosshair color")) {
+            @Override
+            public void insertText(String input) {
+                String filtered = input.replaceAll("[^#0-9a-fA-F]", "");
+                if (!filtered.isEmpty()) {
+                    super.insertText(filtered);
+                }
+            }
+        };
         crosshairHexBox.setMaxLength(7);
-        crosshairHexBox.setFilter(s -> s.matches("^#?[0-9a-fA-F]*$"));
         crosshairHexBox.setValue(String.format("#%06x", config.getCrosshairColor().getRGB() & 0xFFFFFF));
         crosshairHexBox.setTooltip(Tooltip.create(
                 Component.literal("The crosshair color is inactive on custom crosshair shape")
@@ -74,9 +81,16 @@ public class ConfigScreen extends Screen {
         addRenderableWidget(new StringWidget(x, y, width, height, Component.literal("Attack indicator color (Hex):"), this.font));
         y += 16;
 
-        EditBox attackIndicatorHexBox = new EditBox(this.font, x, y, width, height, Component.literal("Attack indicator color"));
+        EditBox attackIndicatorHexBox = new EditBox(this.font, x, y, width, height, Component.literal("Attack indicator color")) {
+            @Override
+            public void insertText(String input) {
+                String filtered = input.replaceAll("[^#0-9a-fA-F]", "");
+                if (!filtered.isEmpty()) {
+                    super.insertText(filtered);
+                }
+            }
+        };
         attackIndicatorHexBox.setMaxLength(7);
-        attackIndicatorHexBox.setFilter(s -> s.matches("^#?[0-9a-fA-F]*$"));
         attackIndicatorHexBox.setValue(String.format("#%06x", config.getAttackIndicatorColor().getRGB() & 0xFFFFFF));
         attackIndicatorHexBox.setResponder(value -> {
             try {
@@ -88,7 +102,7 @@ public class ConfigScreen extends Screen {
         int bottomY = this.height - 30;
 
         addRenderableWidget(Button
-                .builder(Component.literal("Edit crosshair shape"), button -> {
+                .builder(Component.literal("Edit crosshair shape"), _ -> {
                     Minecraft.getInstance().setScreen(new EditShapeScreen(this));
                 })
                 .pos(this.width / 2 - 155, bottomY)
@@ -97,7 +111,7 @@ public class ConfigScreen extends Screen {
         );
 
         addRenderableWidget(Button
-                .builder(Component.literal("Done"), button -> {
+                .builder(Component.literal("Done"), _ -> {
                     Minecraft.getInstance().setScreen(parent);
                 })
                 .pos(this.width / 2 + 5, bottomY)
