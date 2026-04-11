@@ -9,6 +9,7 @@
     "MixinCrosshairColor",
     "MixinGui",
     "MixinMinecraft",
+    "MixinRenderType",
     "MixinSplashOverlay"
   ],
   "injectors": {

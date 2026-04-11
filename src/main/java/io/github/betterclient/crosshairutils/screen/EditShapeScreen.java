@@ -12,10 +12,8 @@ import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.SpriteIconButton;
 import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
-import org.jspecify.annotations.NonNull;
+import net.minecraft.resources.ResourceLocation;
 
 import java.awt.*;
 import java.util.Arrays;
@@ -37,7 +35,7 @@ public class EditShapeScreen extends Screen {
     }
 
     @Override
-    public void render(@NonNull GuiGraphics guiGraphics, int i, int j, float f) {
+    public void render(GuiGraphics guiGraphics, int i, int j, float f) {
         super.render(guiGraphics, i, j, f);
 
         if (getShape() != CrossShape.CUSTOM) return;
@@ -98,24 +96,23 @@ public class EditShapeScreen extends Screen {
     }
 
     @Override
-    public boolean mouseClicked(@NonNull MouseButtonEvent mouseButtonEvent, boolean bl) {
-        if (mouseButtonEvent.button() == 0) {
+    public boolean mouseClicked(double d, double e, int i) {
+        if (i == 0) {
             mouseLeftDown = true;
-        } else if (mouseButtonEvent.button() == 1) {
+        } else if (i == 1) {
             mouseRightDown = true;
         }
-        return super.mouseClicked(mouseButtonEvent, bl);
+        return super.mouseClicked(d, e, i);
     }
 
     @Override
-    public boolean mouseReleased(MouseButtonEvent mouseButtonEvent) {
-        if (mouseButtonEvent.button() == 0) {
+    public boolean mouseReleased(double d, double e, int i) {
+        if (i == 0) {
             mouseLeftDown = false;
-        }  else if (mouseButtonEvent.button() == 1) {
+        } else if (i == 1) {
             mouseRightDown = false;
         }
-
-        return super.mouseReleased(mouseButtonEvent);
+        return super.mouseReleased(d, e, i);
     }
 
     @Override
@@ -177,7 +174,7 @@ public class EditShapeScreen extends Screen {
 
         addIconButton(
                 leftX, startY, iconSize, null,
-                Identifier.tryBuild("crosshairutils", "menu/white"),
+                ResourceLocation.tryBuild("crosshairutils", "menu/white"),
                 button -> {
                     selectedColor = Color.WHITE.getRGB();
                 }
@@ -186,7 +183,7 @@ public class EditShapeScreen extends Screen {
 
         addIconButton(
                 leftX, startY + ((index++) * (iconSize + spacing)), iconSize, null,
-                Identifier.tryBuild("crosshairutils", "menu/red"),
+                ResourceLocation.tryBuild("crosshairutils", "menu/red"),
                 button -> {
                     selectedColor = Color.RED.getRGB();
                 }
@@ -194,7 +191,7 @@ public class EditShapeScreen extends Screen {
 
         addIconButton(
                 leftX, startY + ((index++) * (iconSize + spacing)), iconSize, null,
-                Identifier.tryBuild("crosshairutils", "menu/green"),
+                ResourceLocation.tryBuild("crosshairutils", "menu/green"),
                 button -> {
                     selectedColor = Color.GREEN.getRGB();
                 }
@@ -202,7 +199,7 @@ public class EditShapeScreen extends Screen {
 
         addIconButton(
                 leftX, startY + ((index++) * (iconSize + spacing)), iconSize, null,
-                Identifier.tryBuild("crosshairutils", "menu/blue"),
+                ResourceLocation.tryBuild("crosshairutils", "menu/blue"),
                 button -> {
                     selectedColor = Color.BLUE.getRGB();
                 }
@@ -244,7 +241,7 @@ public class EditShapeScreen extends Screen {
 
         addIconButton(
                 rightX, startY, iconSize, "Copy code",
-                Identifier.tryBuild("crosshairutils", "menu/copy"),
+                ResourceLocation.tryBuild("crosshairutils", "menu/copy"),
                 btn -> {
                     Minecraft.getInstance().keyboardHandler.setClipboard(ConfigSerializer.toStr0(realShape));
                 }
@@ -252,7 +249,7 @@ public class EditShapeScreen extends Screen {
 
         addIconButton(
                 rightX, startY + (iconSize + spacing), iconSize, "Paste code from clipboard",
-                Identifier.tryBuild("crosshairutils", "menu/paste"),
+                ResourceLocation.tryBuild("crosshairutils", "menu/paste"),
                 btn -> {
                     try {
                         ConfigSerializer.readFromStr(Minecraft.getInstance().keyboardHandler.getClipboard(), realShape);
@@ -262,7 +259,7 @@ public class EditShapeScreen extends Screen {
 
         addIconButton(
                 rightX, startY + 2 * (iconSize + spacing), iconSize, "Reset to vanilla",
-                Identifier.tryBuild("minecraft", "hud/crosshair"),
+                ResourceLocation.tryBuild("minecraft", "hud/crosshair"),
                 btn -> {
                     askForConsent("Are you sure you wanna reset your custom crosshair?", () -> {
                         for (int[] row : realShape) Arrays.fill(row, 0);
@@ -278,7 +275,7 @@ public class EditShapeScreen extends Screen {
 
         addIconButton(
                 rightX, startY + 3 * (iconSize + spacing), iconSize, "Clear",
-                Identifier.tryBuild("minecraft", "container/beacon/cancel"),
+                ResourceLocation.tryBuild("minecraft", "container/beacon/cancel"),
                 btn -> {
                     askForConsent("Are you sure you wanna clear your custom crosshair?", () -> {
                         for (int[] row : realShape) Arrays.fill(row, 0);
@@ -287,12 +284,11 @@ public class EditShapeScreen extends Screen {
         );
     }
 
-    private void addIconButton(int x, int y, int size, String tooltip, Identifier sprite, Button.OnPress action) {
+    private void addIconButton(int x, int y, int size, String tooltip, ResourceLocation sprite, Button.OnPress action) {
         SpriteIconButton.Builder builder = SpriteIconButton
                 .builder(Component.literal(tooltip == null ? "" : tooltip), action, true)
                 .size(size, size)
                 .sprite(Objects.requireNonNull(sprite), 16, 16);
-        if (tooltip != null) builder.withTootip();
 
         SpriteIconButton btn = builder.build();
         btn.setPosition(x, y);
@@ -305,8 +301,6 @@ public class EditShapeScreen extends Screen {
             Minecraft.getInstance().setScreen(this);
         }, Component.empty(), Component.literal(text)));
     }
-
-
 
     public CrossShape getShape() {
         return switch (currentMode) {
