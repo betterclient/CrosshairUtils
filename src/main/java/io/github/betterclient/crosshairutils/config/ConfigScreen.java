@@ -24,23 +24,24 @@ public class ConfigScreen extends Screen {
         int width = 150;
         int height = 20;
 
+        Config config = Config.getInstance();
         addRenderableWidget(Checkbox
                 .builder(Component.literal("Render crosshair"), this.font)
                 .pos(x, y)
-                .onValueChange((checkbox, bl) -> Config.getInstance().setShouldRenderCrosshair(bl))
-                .selected(Config.getInstance().shouldRenderCrosshair())
+                .onValueChange((checkbox, bl) -> config.setShouldRenderCrosshair(bl))
+                .selected(config.shouldRenderCrosshair())
                 .build()
         );
 
         y += spacing;
 
         addRenderableWidget(Button
-                .builder(Component.literal("Blend mode: " + Config.getInstance().blendModeStr()), button -> {
-                    int ordinal = Config.getInstance().getCrosshairBlendMode().ordinal();
+                .builder(Component.literal("Blend mode: " + config.blendModeStr()), button -> {
+                    int ordinal = config.getCrosshairBlendMode().ordinal();
                     Config.BlendMode value = Config.BlendMode.values()[ordinal == Config.BlendMode.values().length - 1 ? 0 : ordinal + 1];
 
-                    Config.getInstance().setCrosshairBlendMode(value);
-                    button.setMessage(Component.literal("Blend mode: " + Config.getInstance().blendModeStr()));
+                    config.setCrosshairBlendMode(value);
+                    button.setMessage(Component.literal("Blend mode: " + config.blendModeStr()));
                 })
                 .pos(x, y)
                 .size(width, height)
@@ -55,10 +56,13 @@ public class ConfigScreen extends Screen {
         EditBox crosshairHexBox = new EditBox(this.font, x, y, width, height, Component.literal("Crosshair color"));
         crosshairHexBox.setMaxLength(7);
         crosshairHexBox.setFilter(s -> s.matches("^#?[0-9a-fA-F]*$"));
-        crosshairHexBox.setValue(String.format("#%06x", Config.getInstance().getCrosshairColorJava().getRGB() & 0xFFFFFF));
+        crosshairHexBox.setValue(String.format("#%06x", config.getCrosshairColorJava().getRGB() & 0xFFFFFF));
+        crosshairHexBox.setTooltip(Tooltip.create(
+                Component.literal("The crosshair color is inactive on custom crosshair shape")
+        ));
         crosshairHexBox.setResponder(value -> {
             try {
-                Config.getInstance().setCroshairColor(Color.decode(value));
+                config.setCroshairColor(Color.decode(value));
             } catch (Exception ignored) {} //ignore normal typing
         });
         addRenderableWidget(crosshairHexBox);
@@ -71,10 +75,10 @@ public class ConfigScreen extends Screen {
         EditBox attackIndicatorHexBox = new EditBox(this.font, x, y, width, height, Component.literal("Attack indicator color"));
         attackIndicatorHexBox.setMaxLength(7);
         attackIndicatorHexBox.setFilter(s -> s.matches("^#?[0-9a-fA-F]*$"));
-        attackIndicatorHexBox.setValue(String.format("#%06x", Config.getInstance().getAttackIndicatorColorJava().getRGB() & 0xFFFFFF));
+        attackIndicatorHexBox.setValue(String.format("#%06x", config.getAttackIndicatorColorJava().getRGB() & 0xFFFFFF));
         attackIndicatorHexBox.setResponder(value -> {
             try {
-                Config.getInstance().setAttackIndicatorColor(Color.decode(value));
+                config.setAttackIndicatorColor(Color.decode(value));
             } catch (Exception ignored) {} //ignore normal typing
         });
         addRenderableWidget(attackIndicatorHexBox);

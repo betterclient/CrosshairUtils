@@ -5,6 +5,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import org.json.JSONObject;
 
 import java.awt.*;
+import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Base64;
@@ -19,13 +20,13 @@ public class Config {
     private Color attackIndicatorColor = new Color(255, 255, 255, 255);
 
     private CrossShape shape = CrossShape.VANILLA;
-    private boolean[][] customShape = new boolean[CUSTOM_TEXTURE_SIZE][CUSTOM_TEXTURE_SIZE];
+    private int[][] customShape = new int[CUSTOM_TEXTURE_SIZE][CUSTOM_TEXTURE_SIZE];
 
     private CrossShape shapeAttackEntity = CrossShape.VANILLA;
-    private boolean[][] customEntityShape = new boolean[CUSTOM_TEXTURE_SIZE][CUSTOM_TEXTURE_SIZE];
+    private int[][] customEntityShape = new int[CUSTOM_TEXTURE_SIZE][CUSTOM_TEXTURE_SIZE];
 
     private CrossShape shapeAttackBlock = CrossShape.VANILLA;
-    private boolean[][] customBlockShape = new boolean[CUSTOM_TEXTURE_SIZE][CUSTOM_TEXTURE_SIZE];
+    private int[][] customBlockShape = new int[CUSTOM_TEXTURE_SIZE][CUSTOM_TEXTURE_SIZE];
 
     public boolean shouldRenderCrosshair() {
         return renderCrosshair;
@@ -92,7 +93,7 @@ public class Config {
         return shapeAttackBlock;
     }
 
-    public boolean[][] getCustomShape(EditShapeScreen.Mode mode) {
+    public int[][] getCustomShape(EditShapeScreen.Mode mode) {
         return switch (mode) {
             case NORMAL -> customShape;
             case ATTACK_ENTITY -> customEntityShape;
@@ -163,32 +164,34 @@ public class Config {
         };
     }
 
-    String toStr0(boolean[][] shape) {
+    String toStr0(int[][] shape) {
         int rows = shape.length, cols = rows > 0 ? shape[0].length : 0;
-        byte[] data = new byte[2 + (rows * cols + 7) / 8];
-        data[0] = (byte) rows;
-        data[1] = (byte) cols;
-        int bit = 0;
-        for (boolean[] row : shape)
-            for (boolean cell : row) {
-                if (cell) data[2 + bit / 8] |= 1 << (bit % 8);
-                bit++;
+        ByteBuffer buffer = ByteBuffer.allocate(8 + (rows * cols * 4));
+        buffer.putInt(rows);
+        buffer.putInt(cols);
+        for (int[] row : shape) {
+            for (int cell : row) {
+                buffer.putInt(cell);
             }
-        return Base64.getEncoder().encodeToString(data);
+        }
+        return Base64.getEncoder().encodeToString(buffer.array());
     }
 
-    boolean[][] fromStr(String str, boolean[][] defaultValue) {
+    int[][] fromStr(String str, int[][] defaultValue) {
         if (str.equals("0")) return defaultValue;
         try {
             byte[] data = Base64.getDecoder().decode(str);
-            int rows = data[0] & 0xFF, cols = data[1] & 0xFF;
-            boolean[][] shape = new boolean[rows][cols];
-            int bit = 0;
-            for (int i = 0; i < rows; i++)
-                for (int j = 0; j < cols; j++)
-                    shape[i][j] = (data[2 + bit / 8] & (1 << (bit++ % 8))) != 0;
+            ByteBuffer buffer = ByteBuffer.wrap(data);
+            int rows = buffer.getInt();
+            int cols = buffer.getInt();
+            int[][] shape = new int[rows][cols];
+            for (int i = 0; i < rows; i++) {
+                for (int j = 0; j < cols; j++) {
+                    shape[i][j] = buffer.getInt();
+                }
+            }
             return shape;
-        } catch (Exception e) {
+        } catch (Throwable e) {
             return defaultValue;
         }
     }

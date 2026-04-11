@@ -57,20 +57,20 @@ public class EditShapeScreen extends Screen {
             for (int y = 0; y < CUSTOM_TEXTURE_SIZE; y++) {
                 int currentX = startX + x * GRID_WIDTH;
                 int currentY = startY + y * GRID_HEIGHT;
-                boolean[][] customShape = Config.getInstance().getCustomShape(currentMode);
-                boolean filled = customShape[x][y];
+                int[][] customShape = Config.getInstance().getCustomShape(currentMode);
+                int color = customShape[x][y];
 
                 if (isMouseOver(i, j, currentX, currentY, currentX + 8, currentY + 8)) {
                     if (mouseLeftDown) {
-                        customShape[x][y] = true;
-                        filled = true;
+                        customShape[x][y] = -1; //todo: be able to change this
+                        color = -1;
                     } else if (mouseRightDown) {
-                        customShape[x][y] = false;
-                        filled = false;
+                        customShape[x][y] = 0;
+                        color = 0;
                     }
                 }
 
-                guiGraphics.fill(currentX, currentY, currentX + 8, currentY + 8, (filled ? Color.GRAY : Color.DARK_GRAY).getRGB());
+                guiGraphics.fill(currentX, currentY, currentX + 8, currentY + 8, color);
 
                 if (x == centerIndex && y == centerIndex) {
                     int dotSize = 2;
@@ -156,7 +156,7 @@ public class EditShapeScreen extends Screen {
         int iconSize = 20, spacing = 5, numButtons = 4;
         int rightX = this.width - iconSize - 10;
         int startY = (this.height - (numButtons * iconSize + (numButtons - 1) * spacing)) / 2;
-        boolean[][] realShape = config.getCustomShape(currentMode);
+        int[][] realShape = config.getCustomShape(currentMode);
 
         addIconButton(
                 rightX, startY, iconSize, "Copy code",
@@ -171,7 +171,7 @@ public class EditShapeScreen extends Screen {
                 Identifier.tryBuild("crosshairutils", "menu/paste"),
                 btn -> {
                     try {
-                        boolean[][] shape = config.fromStr(
+                        int[][] shape = config.fromStr(
                                 Minecraft.getInstance().keyboardHandler.getClipboard(), realShape);
                         for (int x = 0; x < Math.min(shape.length, realShape.length); x++)
                             System.arraycopy(shape[x], 0, realShape[x], 0,
@@ -185,12 +185,12 @@ public class EditShapeScreen extends Screen {
                 Identifier.tryBuild("minecraft", "hud/crosshair"),
                 btn -> {
                     askForConsent("Are you sure you wanna reset your custom crosshair?", () -> {
-                        for (boolean[] row : realShape) Arrays.fill(row, false);
+                        for (int[] row : realShape) Arrays.fill(row, 0);
                         int mid = (realShape.length - 1) / 2;
-                        realShape[mid][mid] = true;
+                        realShape[mid][mid] = -1;
                         for (int i = 1; i <= 4; i++) {
-                            realShape[mid][mid - i] = realShape[mid][mid + i] = true;
-                            realShape[mid - i][mid] = realShape[mid + i][mid] = true;
+                            realShape[mid][mid - i] = realShape[mid][mid + i] = -1;
+                            realShape[mid - i][mid] = realShape[mid + i][mid] = -1;
                         }
                     });
                 }
@@ -201,7 +201,7 @@ public class EditShapeScreen extends Screen {
                 Identifier.tryBuild("minecraft", "container/beacon/cancel"),
                 btn -> {
                     askForConsent("Are you sure you wanna clear your custom crosshair?", () -> {
-                        for (boolean[] row : realShape) Arrays.fill(row, false);
+                        for (int[] row : realShape) Arrays.fill(row, 0);
                     });
                 }
         );

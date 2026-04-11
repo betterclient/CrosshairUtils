@@ -26,7 +26,7 @@ public class MixinCrosshairColor {
                     identifier,
                     i, j, 0f, 0f,
                     k, l, k, l, k, l,
-                    ARGB.color(crosshairColor.alpha(), crosshairColor.red(), crosshairColor.green(), crosshairColor.blue())
+                    -1 //custom crosshairs are already colored
             );
         } else {
             instance.blitSprite(renderPipeline, identifier, i, j, k, l, ARGB.color(

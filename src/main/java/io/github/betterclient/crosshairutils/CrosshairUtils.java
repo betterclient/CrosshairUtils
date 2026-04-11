@@ -26,13 +26,13 @@ public class CrosshairUtils implements ClientModInitializer {
 
     public static final List<Identifier> customTextures = List.of(CUSTOM_MISS, CUSTOM_ENTITY, CUSTOM_BLOCK);
 
-    public static void load(boolean[][] customShape, DynamicTexture texture) {
+    public static void load(int[][] customShape, DynamicTexture texture) {
         NativeImage nativeImage = texture.getPixels();
         for (int x = 0; x < CUSTOM_TEXTURE_SIZE; x++) {
             for (int y = 0; y < CUSTOM_TEXTURE_SIZE; y++) {
                 if (x >= customShape.length || y >= customShape[x].length) continue; //custom texture size got changed...
                 assert nativeImage != null;
-                nativeImage.setPixel(x, y, customShape[x][y] ? -1 : 0);
+                nativeImage.setPixel(x, y, customShape[x][y]);
             }
         }
         texture.upload();
