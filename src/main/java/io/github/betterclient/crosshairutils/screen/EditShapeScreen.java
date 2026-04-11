@@ -1,6 +1,10 @@
-package io.github.betterclient.crosshairutils.config;
+package io.github.betterclient.crosshairutils.screen;
 
 import io.github.betterclient.crosshairutils.CrosshairUtils;
+import io.github.betterclient.crosshairutils.config.Config;
+import io.github.betterclient.crosshairutils.config.ConfigSerializer;
+import io.github.betterclient.crosshairutils.config.CrossShape;
+import io.github.betterclient.crosshairutils.config.CrosshairMode;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -21,7 +25,7 @@ import static io.github.betterclient.crosshairutils.CrosshairUtils.CUSTOM_TEXTUR
 
 public class EditShapeScreen extends Screen {
     private final Screen parent;
-    private Mode currentMode = Mode.NORMAL;
+    private CrosshairMode currentMode = CrosshairMode.NORMAL;
     private final Config config = Config.getInstance();
     private boolean mouseLeftDown = false;
     private boolean mouseRightDown = false;
@@ -36,7 +40,7 @@ public class EditShapeScreen extends Screen {
     public void render(@NonNull GuiGraphics guiGraphics, int i, int j, float f) {
         super.render(guiGraphics, i, j, f);
 
-        if (getShape() != Config.CrossShape.CUSTOM) return;
+        if (getShape() != CrossShape.CUSTOM) return;
 
         int leftX = 10;
         int iconSize = 20;
@@ -116,9 +120,9 @@ public class EditShapeScreen extends Screen {
 
     @Override
     public void removed() {
-        CrosshairUtils.load(config.getCustomShape(Mode.NORMAL), CrosshairUtils.missTexture);
-        CrosshairUtils.load(config.getCustomShape(Mode.ATTACK_ENTITY), CrosshairUtils.entityTexture);
-        CrosshairUtils.load(config.getCustomShape(Mode.ATTACK_BLOCK), CrosshairUtils.blockTexture);
+        CrosshairUtils.load(config.getCustomShape(CrosshairMode.NORMAL), CrosshairUtils.missTexture);
+        CrosshairUtils.load(config.getCustomShape(CrosshairMode.ATTACK_ENTITY), CrosshairUtils.entityTexture);
+        CrosshairUtils.load(config.getCustomShape(CrosshairMode.ATTACK_BLOCK), CrosshairUtils.blockTexture);
     }
 
     private boolean isMouseOver(int mouseX, int mouseY, int x, int y, int endX, int endY) {
@@ -131,7 +135,7 @@ public class EditShapeScreen extends Screen {
         int topY = 20;
         addRenderableWidget(Button
                 .builder(Component.literal("Mode: " + currentMode.text), button -> {
-                    currentMode = Mode.values()[currentMode.ordinal() == Mode.values().length - 1 ? 0 : currentMode.ordinal() + 1];
+                    currentMode = CrosshairMode.values()[currentMode.ordinal() == CrosshairMode.values().length - 1 ? 0 : currentMode.ordinal() + 1];
                     clearWidgets();
                     init();
                 })
@@ -142,7 +146,7 @@ public class EditShapeScreen extends Screen {
 
         addRenderableWidget(Button
                 .builder(Component.literal("Shape: " + getShape().name()), button -> {
-                    setShape(Config.CrossShape.values()[getShape().ordinal() == Config.CrossShape.values().length - 1 ? 0 : getShape().ordinal() + 1]);
+                    setShape(CrossShape.values()[getShape().ordinal() == CrossShape.values().length - 1 ? 0 : getShape().ordinal() + 1]);
 
                     clearWidgets();
                     init();
@@ -160,7 +164,7 @@ public class EditShapeScreen extends Screen {
                 .build()
         );
 
-        if (getShape() != Config.CrossShape.CUSTOM) return;
+        if (getShape() != CrossShape.CUSTOM) return;
 
         initRightButtons();
         initLeftWidgets();
@@ -242,7 +246,7 @@ public class EditShapeScreen extends Screen {
                 rightX, startY, iconSize, "Copy code",
                 Identifier.tryBuild("crosshairutils", "menu/copy"),
                 btn -> {
-                    Minecraft.getInstance().keyboardHandler.setClipboard(config.toStr0(realShape));
+                    Minecraft.getInstance().keyboardHandler.setClipboard(ConfigSerializer.toStr0(realShape));
                 }
         );
 
@@ -251,11 +255,7 @@ public class EditShapeScreen extends Screen {
                 Identifier.tryBuild("crosshairutils", "menu/paste"),
                 btn -> {
                     try {
-                        int[][] shape = config.fromStr(
-                                Minecraft.getInstance().keyboardHandler.getClipboard(), realShape);
-                        for (int x = 0; x < Math.min(shape.length, realShape.length); x++)
-                            System.arraycopy(shape[x], 0, realShape[x], 0,
-                                    Math.min(shape[x].length, realShape[x].length));
+                        ConfigSerializer.readFromStr(Minecraft.getInstance().keyboardHandler.getClipboard(), realShape);
                     } catch (IllegalArgumentException ignored) {}
                 }
         );
@@ -306,16 +306,9 @@ public class EditShapeScreen extends Screen {
         }, Component.empty(), Component.literal(text)));
     }
 
-    public enum Mode {
-        NORMAL("Normal"), ATTACK_ENTITY("Attacking Entity"), ATTACK_BLOCK("Attacking Block");
 
-        public final String text;
-        Mode(String text) {
-            this.text = text;
-        }
-    }
 
-    public Config.CrossShape getShape() {
+    public CrossShape getShape() {
         return switch (currentMode) {
             case NORMAL -> config.getShape();
             case ATTACK_ENTITY -> config.getShapeAttackEntity();
@@ -323,7 +316,7 @@ public class EditShapeScreen extends Screen {
         };
     }
 
-    public void setShape(Config.CrossShape shape) {
+    public void setShape(CrossShape shape) {
         switch (currentMode) {
             case NORMAL -> config.setShape(shape);
             case ATTACK_ENTITY -> config.setShapeAttackEntity(shape);

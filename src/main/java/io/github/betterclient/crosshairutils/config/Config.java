@@ -1,19 +1,6 @@
 package io.github.betterclient.crosshairutils.config;
 
-import io.github.betterclient.crosshairutils.CrosshairUtils;
-import net.fabricmc.loader.api.FabricLoader;
-import org.json.JSONObject;
-
 import java.awt.*;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Base64;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
 
 import static io.github.betterclient.crosshairutils.CrosshairUtils.CUSTOM_TEXTURE_SIZE;
 
@@ -25,13 +12,13 @@ public class Config {
     private Color attackIndicatorColor = new Color(255, 255, 255, 255);
 
     private CrossShape shape = CrossShape.VANILLA;
-    private int[][] customShape = new int[CUSTOM_TEXTURE_SIZE][CUSTOM_TEXTURE_SIZE];
+    private final int[][] customShape = new int[CUSTOM_TEXTURE_SIZE][CUSTOM_TEXTURE_SIZE];
 
     private CrossShape shapeAttackEntity = CrossShape.VANILLA;
-    private int[][] customEntityShape = new int[CUSTOM_TEXTURE_SIZE][CUSTOM_TEXTURE_SIZE];
+    private final int[][] customEntityShape = new int[CUSTOM_TEXTURE_SIZE][CUSTOM_TEXTURE_SIZE];
 
     private CrossShape shapeAttackBlock = CrossShape.VANILLA;
-    private int[][] customBlockShape = new int[CUSTOM_TEXTURE_SIZE][CUSTOM_TEXTURE_SIZE];
+    private final int[][] customBlockShape = new int[CUSTOM_TEXTURE_SIZE][CUSTOM_TEXTURE_SIZE];
 
     public boolean shouldRenderCrosshair() {
         return renderCrosshair;
@@ -45,15 +32,6 @@ public class Config {
     public Color getAttackIndicatorColor() {
         return attackIndicatorColor;
     }
-
-    public java.awt.Color getCrosshairColorJava() {
-        return new java.awt.Color(crosshairColor.red(), crosshairColor.green(), crosshairColor.blue(), crosshairColor.alpha());
-    }
-
-    public java.awt.Color getAttackIndicatorColorJava() {
-        return new java.awt.Color(attackIndicatorColor.red(), attackIndicatorColor.green(), attackIndicatorColor.blue(), attackIndicatorColor.alpha());
-    }
-
     public void setShouldRenderCrosshair(boolean bl) {
         this.renderCrosshair = bl;
     }
@@ -70,11 +48,11 @@ public class Config {
         this.crosshairBlendMode = value;
     }
 
-    public void setCroshairColor(java.awt.Color color) {
+    public void setCrosshairColor(Color color) {
         this.crosshairColor = new Color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
     }
 
-    public void setAttackIndicatorColor(java.awt.Color color) {
+    public void setAttackIndicatorColor(Color color) {
         this.attackIndicatorColor = new Color(color.getRed(), color.getGreen(), color.getBlue(), color.getAlpha());
     }
 
@@ -98,7 +76,7 @@ public class Config {
         return shapeAttackBlock;
     }
 
-    public int[][] getCustomShape(EditShapeScreen.Mode mode) {
+    public int[][] getCustomShape(CrosshairMode mode) {
         return switch (mode) {
             case NORMAL -> customShape;
             case ATTACK_ENTITY -> customEntityShape;
@@ -115,146 +93,8 @@ public class Config {
         if (instance == null) {
             //readConfig
             instance = new Config();
-            instance.readConfig();
+            ConfigSerializer.readConfig(instance);
         }
         return instance;
-    }
-
-    public void readConfig() {
-        Path config = FabricLoader.getInstance().getConfigDir().resolve("crosshairutils.json");
-        if (!config.toFile().exists()) return;
-        JSONObject obj;
-        try {
-            obj = new JSONObject(Files.readString(config));
-        } catch (Exception e) {
-            return;
-        }
-
-        renderCrosshair = obj.optBoolean("renderCrosshair", renderCrosshair);
-        crosshairBlendMode = BlendMode.valueOf(obj.optString("crosshairBlendMode", "INVERT"));
-
-        java.awt.Color c = new java.awt.Color(obj.optInt("crosshairColor", -1), true);
-        crosshairColor = new Color(c.getRed(), c.getGreen(), c.getBlue(), c.getAlpha());
-
-        java.awt.Color a = new java.awt.Color(obj.optInt("attackIndicatorColor", -1), true);
-        attackIndicatorColor = new Color(a.getRed(), a.getGreen(), a.getBlue(), a.getAlpha());
-
-        shape = fromStr(obj.optString("shape", "vanilla"));
-        customShape = fromStr(obj.optString("customShape", "0"), customShape);
-
-        shapeAttackEntity = fromStr(obj.optString("shapeAttackEntity", "vanilla"));
-        customEntityShape = fromStr(obj.optString("customEntityShape", "0"), customEntityShape);
-
-        shapeAttackBlock = fromStr(obj.optString("shapeAttackBlock", "vanilla"));
-        customBlockShape = fromStr(obj.optString("customBlockShape", "0"), customBlockShape);
-    }
-
-    private CrossShape fromStr(String s) {
-        return switch (s.toLowerCase()) {
-            case "arrow" -> CrossShape.ARROW;
-            case "dot" -> CrossShape.DOT;
-            case "circle" -> CrossShape.CIRCLE;
-            case "custom" -> CrossShape.CUSTOM;
-            default -> CrossShape.VANILLA;
-        };
-    }
-
-    private String toStr(CrossShape shape) {
-        return switch (shape) {
-            case ARROW -> "arrow";
-            case DOT -> "dot";
-            case CIRCLE -> "circle";
-            case CUSTOM -> "custom";
-            default -> "vanilla";
-        };
-    }
-
-    String toStr0(int[][] shape) {
-        int rows = shape.length, cols = rows > 0 ? shape[0].length : 0;
-        ByteBuffer buffer = ByteBuffer.allocate(8 + (rows * cols * 4));
-        buffer.putInt(rows);
-        buffer.putInt(cols);
-        for (int[] row : shape) {
-            for (int cell : row) {
-                buffer.putInt(cell);
-            }
-        }
-
-        try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            GZIPOutputStream gzip = new GZIPOutputStream(baos);
-            gzip.write(buffer.array());
-            gzip.close();
-            return Base64.getEncoder().encodeToString(baos.toByteArray());
-        } catch (IOException e) {
-            return "0";
-        }
-    }
-
-    int[][] fromStr(String str, int[][] defaultValue) {
-        if (str.equals("0")) return defaultValue;
-        try {
-            byte[] compressed = Base64.getDecoder().decode(str);
-
-            ByteArrayInputStream bais = new ByteArrayInputStream(compressed);
-            GZIPInputStream gzip = new GZIPInputStream(bais);
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            byte[] tempBuffer = new byte[1024];
-            int len;
-            while ((len = gzip.read(tempBuffer)) > 0) {
-                out.write(tempBuffer, 0, len);
-            }
-            byte[] rawData = out.toByteArray();
-
-            ByteBuffer buffer = ByteBuffer.wrap(rawData);
-            int rows = buffer.getInt();
-            int cols = buffer.getInt();
-            int[][] shape = new int[rows][cols];
-
-            for (int i = 0; i < rows; i++) {
-                for (int j = 0; j < cols; j++) {
-                    shape[i][j] = buffer.getInt();
-                }
-            }
-            return shape;
-        } catch (Exception e) {
-            return defaultValue;
-        }
-    }
-
-    public void saveConfig() {
-        Path config = FabricLoader.getInstance().getConfigDir().resolve("crosshairutils.json");
-        try {
-            JSONObject obj = new JSONObject();
-            obj.put("renderCrosshair", renderCrosshair);
-            obj.put("crosshairBlendMode", crosshairBlendMode.toString());
-            obj.put("crosshairColor", new java.awt.Color(
-                    crosshairColor.red, crosshairColor.green, crosshairColor.blue, crosshairColor.alpha
-            ).getRGB());
-            obj.put("attackIndicatorColor", new java.awt.Color(
-                    attackIndicatorColor.red, attackIndicatorColor.green, crosshairColor.blue, crosshairColor.alpha
-            ).getRGB());
-            obj.put("shape", toStr(shape));
-            obj.put("customShape", toStr0(customShape));
-
-            obj.put("shapeAttackEntity", toStr(shapeAttackEntity));
-            obj.put("customEntityShape", toStr0(customEntityShape));
-
-            obj.put("shapeAttackBlock", toStr(shapeAttackBlock));
-            obj.put("customBlockShape", toStr0(customBlockShape));
-
-            if (Files.exists(config)) Files.delete(config);
-            Files.writeString(config, obj.toString(4));
-        } catch (Exception e) {
-            CrosshairUtils.LOGGER.error("Failed to save config", e);
-        }
-    }
-
-    public enum BlendMode {
-        NORMAL, ADDITIVE, INVERT,
-    }
-    public record Color(int red, int green, int blue, int alpha) { }
-    public enum CrossShape {
-        VANILLA, ARROW, DOT, CIRCLE, CUSTOM
     }
 }

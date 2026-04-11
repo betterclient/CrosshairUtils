@@ -1,5 +1,7 @@
-package io.github.betterclient.crosshairutils.config;
+package io.github.betterclient.crosshairutils.screen;
 
+import io.github.betterclient.crosshairutils.config.BlendMode;
+import io.github.betterclient.crosshairutils.config.Config;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.*;
 import net.minecraft.client.gui.components.Button;
@@ -38,7 +40,7 @@ public class ConfigScreen extends Screen {
         addRenderableWidget(Button
                 .builder(Component.literal("Blend mode: " + config.blendModeStr()), button -> {
                     int ordinal = config.getCrosshairBlendMode().ordinal();
-                    Config.BlendMode value = Config.BlendMode.values()[ordinal == Config.BlendMode.values().length - 1 ? 0 : ordinal + 1];
+                    BlendMode value = BlendMode.values()[ordinal == BlendMode.values().length - 1 ? 0 : ordinal + 1];
 
                     config.setCrosshairBlendMode(value);
                     button.setMessage(Component.literal("Blend mode: " + config.blendModeStr()));
@@ -56,13 +58,13 @@ public class ConfigScreen extends Screen {
         EditBox crosshairHexBox = new EditBox(this.font, x, y, width, height, Component.literal("Crosshair color"));
         crosshairHexBox.setMaxLength(7);
         crosshairHexBox.setFilter(s -> s.matches("^#?[0-9a-fA-F]*$"));
-        crosshairHexBox.setValue(String.format("#%06x", config.getCrosshairColorJava().getRGB() & 0xFFFFFF));
+        crosshairHexBox.setValue(String.format("#%06x", config.getCrosshairColor().getRGB() & 0xFFFFFF));
         crosshairHexBox.setTooltip(Tooltip.create(
                 Component.literal("The crosshair color is inactive on custom crosshair shape")
         ));
         crosshairHexBox.setResponder(value -> {
             try {
-                config.setCroshairColor(Color.decode(value));
+                config.setCrosshairColor(Color.decode(value));
             } catch (Exception ignored) {} //ignore normal typing
         });
         addRenderableWidget(crosshairHexBox);
@@ -75,7 +77,7 @@ public class ConfigScreen extends Screen {
         EditBox attackIndicatorHexBox = new EditBox(this.font, x, y, width, height, Component.literal("Attack indicator color"));
         attackIndicatorHexBox.setMaxLength(7);
         attackIndicatorHexBox.setFilter(s -> s.matches("^#?[0-9a-fA-F]*$"));
-        attackIndicatorHexBox.setValue(String.format("#%06x", config.getAttackIndicatorColorJava().getRGB() & 0xFFFFFF));
+        attackIndicatorHexBox.setValue(String.format("#%06x", config.getAttackIndicatorColor().getRGB() & 0xFFFFFF));
         attackIndicatorHexBox.setResponder(value -> {
             try {
                 config.setAttackIndicatorColor(Color.decode(value));

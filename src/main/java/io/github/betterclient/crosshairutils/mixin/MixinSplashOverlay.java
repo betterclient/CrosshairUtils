@@ -2,7 +2,7 @@ package io.github.betterclient.crosshairutils.mixin;
 
 import io.github.betterclient.crosshairutils.CrosshairUtils;
 import io.github.betterclient.crosshairutils.config.Config;
-import io.github.betterclient.crosshairutils.config.EditShapeScreen;
+import io.github.betterclient.crosshairutils.config.CrosshairMode;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.LoadingOverlay;
 import net.minecraft.client.renderer.texture.DynamicTexture;
@@ -22,18 +22,18 @@ public class MixinSplashOverlay {
                 CrosshairUtils.CUSTOM_MISS,
                 CrosshairUtils.missTexture = new DynamicTexture(() -> "miss", CUSTOM_TEXTURE_SIZE, CUSTOM_TEXTURE_SIZE, false)
         );
-        CrosshairUtils.load(Config.getInstance().getCustomShape(EditShapeScreen.Mode.NORMAL), CrosshairUtils.missTexture);
+        CrosshairUtils.load(Config.getInstance().getCustomShape(CrosshairMode.NORMAL), CrosshairUtils.missTexture);
 
         Minecraft.getInstance().getTextureManager().register(
                 CrosshairUtils.CUSTOM_ENTITY,
                 CrosshairUtils.entityTexture = new DynamicTexture(() -> "entity", CUSTOM_TEXTURE_SIZE, CUSTOM_TEXTURE_SIZE, false)
         );
-        CrosshairUtils.load(Config.getInstance().getCustomShape(EditShapeScreen.Mode.ATTACK_ENTITY), CrosshairUtils.entityTexture);
+        CrosshairUtils.load(Config.getInstance().getCustomShape(CrosshairMode.ATTACK_ENTITY), CrosshairUtils.entityTexture);
 
         Minecraft.getInstance().getTextureManager().register(
                 CrosshairUtils.CUSTOM_BLOCK,
                 CrosshairUtils.blockTexture = new DynamicTexture(() -> "block", CUSTOM_TEXTURE_SIZE, CUSTOM_TEXTURE_SIZE, false)
         );
-        CrosshairUtils.load(Config.getInstance().getCustomShape(EditShapeScreen.Mode.ATTACK_BLOCK), CrosshairUtils.blockTexture);
+        CrosshairUtils.load(Config.getInstance().getCustomShape(CrosshairMode.ATTACK_BLOCK), CrosshairUtils.blockTexture);
     }
 }

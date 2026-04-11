@@ -2,7 +2,7 @@ package io.github.betterclient.crosshairutils;
 
 import com.terraformersmc.modmenu.api.ConfigScreenFactory;
 import com.terraformersmc.modmenu.api.ModMenuApi;
-import io.github.betterclient.crosshairutils.config.ConfigScreen;
+import io.github.betterclient.crosshairutils.screen.ConfigScreen;
 
 public class ModMenuImpl implements ModMenuApi {
     @Override

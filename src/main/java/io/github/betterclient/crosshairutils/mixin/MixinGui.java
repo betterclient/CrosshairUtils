@@ -6,6 +6,7 @@ import com.mojang.blaze3d.platform.DestFactor;
 import com.mojang.blaze3d.platform.SourceFactor;
 import io.github.betterclient.crosshairutils.CrosshairUtils;
 import io.github.betterclient.crosshairutils.config.Config;
+import io.github.betterclient.crosshairutils.config.CrossShape;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
@@ -21,7 +22,6 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-
 
 @Mixin(Gui.class)
 public class MixinGui {
@@ -80,7 +80,7 @@ public class MixinGui {
     private static final Identifier CIRCLE_CROSS = Identifier.tryBuild("crosshairutils", "hud/circle_crosshair");
 
     @Unique
-    private Identifier getId(Config.CrossShape shape, Identifier customName) {
+    private Identifier getId(CrossShape shape, Identifier customName) {
         return switch (shape) {
             case VANILLA -> CROSSHAIR_SPRITE;
             case ARROW -> ARROW_CROSS;
