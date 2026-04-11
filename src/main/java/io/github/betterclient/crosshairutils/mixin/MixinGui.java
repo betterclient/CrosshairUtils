@@ -1,9 +1,7 @@
 package io.github.betterclient.crosshairutils.mixin;
 
-import com.mojang.blaze3d.pipeline.BlendFunction;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.platform.DestFactor;
-import com.mojang.blaze3d.platform.SourceFactor;
+import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.systems.RenderSystem;
 import io.github.betterclient.crosshairutils.CrosshairUtils;
 import io.github.betterclient.crosshairutils.config.Config;
 import io.github.betterclient.crosshairutils.config.CrossShape;
@@ -11,7 +9,6 @@ import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.ResourceLocation;
 import org.objectweb.asm.Opcodes;
 import org.spongepowered.asm.mixin.Final;
@@ -48,13 +45,25 @@ public class MixinGui {
         };
     }
 
-    @Redirect(method = "renderCrosshair", at = @At(value = "FIELD", target = "Lnet/minecraft/client/renderer/RenderPipelines;CROSSHAIR:Lcom/mojang/blaze3d/pipeline/RenderPipeline;", opcode = Opcodes.GETSTATIC))
-    public RenderPipeline redirectCrosshairPipeline() {
-        return switch (config.getCrosshairBlendMode()) {
-            case NORMAL -> CROSSHAIR_NORMAL;
-            case ADDITIVE -> CROSSHAIR_ADDITIVE;
-            case INVERT -> RenderPipelines.CROSSHAIR;
-        };
+    @Redirect(method = "renderCrosshair", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/systems/RenderSystem;blendFuncSeparate(Lcom/mojang/blaze3d/platform/GlStateManager$SourceFactor;Lcom/mojang/blaze3d/platform/GlStateManager$DestFactor;Lcom/mojang/blaze3d/platform/GlStateManager$SourceFactor;Lcom/mojang/blaze3d/platform/GlStateManager$DestFactor;)V"))
+    public void onBlendFunc(GlStateManager.SourceFactor sourceFactor, GlStateManager.DestFactor destFactor, GlStateManager.SourceFactor sourceFactor2, GlStateManager.DestFactor destFactor2) {
+        switch (config.getCrosshairBlendMode()) {
+            case NORMAL -> {
+                RenderSystem.blendFuncSeparate(
+                        GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
+                        GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO
+                );
+            }
+            case ADDITIVE -> {
+                RenderSystem.blendFuncSeparate(
+                        GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE,
+                        GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO
+                );
+            }
+            case INVERT -> {
+                RenderSystem.blendFuncSeparate(sourceFactor, destFactor, sourceFactor2, destFactor);
+            }
+        }
     }
 
     @Unique
@@ -74,20 +83,4 @@ public class MixinGui {
             case CUSTOM -> customName;
         };
     }
-
-    @Unique
-    private static final RenderPipeline CROSSHAIR_ADDITIVE = RenderPipelines.register(
-            RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
-                    .withLocation("pipeline/crosshair_additive")
-                    .withBlend(BlendFunction.ADDITIVE)
-                    .build()
-    );
-
-    @Unique
-    private static final RenderPipeline CROSSHAIR_NORMAL = RenderPipelines.register(
-            RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
-                    .withLocation("pipeline/crosshair_normal")
-                    .withBlend(new BlendFunction(SourceFactor.ONE, DestFactor.ZERO))
-                    .build()
-    );
 }

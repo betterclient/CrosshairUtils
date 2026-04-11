@@ -4,6 +4,7 @@ import com.mojang.blaze3d.platform.NativeImage;
 import net.fabricmc.api.ClientModInitializer;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.FastColor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,7 +33,7 @@ public class CrosshairUtils implements ClientModInitializer {
             for (int y = 0; y < CUSTOM_TEXTURE_SIZE; y++) {
                 if (x >= customShape.length || y >= customShape[x].length) continue; //custom texture size got changed...
                 assert nativeImage != null;
-                nativeImage.setPixel(x, y, customShape[x][y]);
+                nativeImage.setPixelRGBA(x, y, FastColor.ABGR32.fromArgb32(customShape[x][y]));
             }
         }
         texture.upload();

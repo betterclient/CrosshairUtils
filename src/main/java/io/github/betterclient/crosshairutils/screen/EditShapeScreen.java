@@ -12,7 +12,6 @@ import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.SpriteIconButton;
 import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
@@ -97,24 +96,23 @@ public class EditShapeScreen extends Screen {
     }
 
     @Override
-    public boolean mouseClicked(MouseButtonEvent mouseButtonEvent, boolean bl) {
-        if (mouseButtonEvent.button() == 0) {
+    public boolean mouseClicked(double d, double e, int i) {
+        if (i == 0) {
             mouseLeftDown = true;
-        } else if (mouseButtonEvent.button() == 1) {
+        } else if (i == 1) {
             mouseRightDown = true;
         }
-        return super.mouseClicked(mouseButtonEvent, bl);
+        return super.mouseClicked(d, e, i);
     }
 
     @Override
-    public boolean mouseReleased(MouseButtonEvent mouseButtonEvent) {
-        if (mouseButtonEvent.button() == 0) {
+    public boolean mouseReleased(double d, double e, int i) {
+        if (i == 0) {
             mouseLeftDown = false;
-        }  else if (mouseButtonEvent.button() == 1) {
+        } else if (i == 1) {
             mouseRightDown = false;
         }
-
-        return super.mouseReleased(mouseButtonEvent);
+        return super.mouseReleased(d, e, i);
     }
 
     @Override
