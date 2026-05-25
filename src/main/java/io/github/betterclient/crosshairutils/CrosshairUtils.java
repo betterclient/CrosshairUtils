@@ -33,10 +33,20 @@ public class CrosshairUtils implements ClientModInitializer {
             for (int y = 0; y < CUSTOM_TEXTURE_SIZE; y++) {
                 if (x >= customShape.length || y >= customShape[x].length) continue; //custom texture size got changed...
                 assert nativeImage != null;
-                nativeImage.setPixelRGBA(x, y, FastColor.ABGR32.fromArgb32(customShape[x][y]));
+                int color = customShape[x][y];
+                nativeImage.setPixelRGBA(x, y, argbToAbgr(color));
             }
         }
         texture.upload();
+    }
+
+    public static int argbToAbgr(int argb) {
+        int a = (argb >> 24) & 0xFF;
+        int r = (argb >> 16) & 0xFF;
+        int g = (argb >> 8) & 0xFF;
+        int b = argb & 0xFF;
+
+        return (a << 24) | (b << 16) | (g << 8) | r;
     }
 
     @Override

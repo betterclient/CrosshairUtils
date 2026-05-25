@@ -5,7 +5,6 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import io.github.betterclient.crosshairutils.CrosshairUtils;
 import io.github.betterclient.crosshairutils.config.Config;
 import io.github.betterclient.crosshairutils.config.CrossShape;
-import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphics;
@@ -29,7 +28,7 @@ public class MixinGui {
     private static final Config config = Config.getInstance();
 
     @Inject(method = "renderCrosshair", at = @At("HEAD"), cancellable = true)
-    public void onRenderCrosshair(GuiGraphics guiGraphics, DeltaTracker deltaTracker, CallbackInfo ci) {
+    public void onRenderCrosshair(GuiGraphics guiGraphics, float f, CallbackInfo ci) {
         if (!config.shouldRenderCrosshair()) {
             ci.cancel();
         }
