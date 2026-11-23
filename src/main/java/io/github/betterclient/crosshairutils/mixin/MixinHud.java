@@ -1,15 +1,14 @@
 package io.github.betterclient.crosshairutils.mixin;
 
-import com.mojang.blaze3d.pipeline.BlendFunction;
-import com.mojang.blaze3d.pipeline.ColorTargetState;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.platform.BlendFactor;
+import com.mojang.renderpearl.api.pipeline.BlendFactor;
+import com.mojang.renderpearl.api.pipeline.BlendFunction;
+import com.mojang.renderpearl.api.pipeline.ColorTargetState;
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 import io.github.betterclient.crosshairutils.CrosshairUtils;
 import io.github.betterclient.crosshairutils.config.Config;
 import io.github.betterclient.crosshairutils.config.CrossShape;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.Hud;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -25,7 +24,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(Hud.class)
-public class MixinGui {
+public class MixinHud {
     @Final
     @Shadow
     private static Identifier CROSSHAIR_SPRITE;
@@ -65,7 +64,7 @@ public class MixinGui {
         };
     }
 
-    @Redirect(method = "extractCrosshair", at = @At(value = "FIELD", target = "Lnet/minecraft/client/renderer/RenderPipelines;CROSSHAIR:Lcom/mojang/blaze3d/pipeline/RenderPipeline;", opcode = Opcodes.GETSTATIC))
+    @Redirect(method = "extractCrosshair", at = @At(value = "FIELD", target = "Lnet/minecraft/client/renderer/RenderPipelines;CROSSHAIR:Lcom/mojang/renderpearl/api/pipeline/RenderPipeline;", opcode = Opcodes.GETSTATIC))
     public RenderPipeline injectCustomPipeline() {
         return switch (config.getCrosshairBlendMode()) {
             case NORMAL -> CROSSHAIR_NORMAL;

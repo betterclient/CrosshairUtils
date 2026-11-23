@@ -7,7 +7,7 @@
   ],
   "client": [
     "MixinCrosshairColor",
-    "MixinGui",
+    "MixinHud",
     "MixinMinecraft",
     "MixinSplashOverlay"
   ],
