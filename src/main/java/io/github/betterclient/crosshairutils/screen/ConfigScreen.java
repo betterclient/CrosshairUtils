@@ -103,7 +103,7 @@ public class ConfigScreen extends Screen {
 
         addRenderableWidget(Button
                 .builder(Component.literal("Edit crosshair shape"), _ -> {
-                    Minecraft.getInstance().setScreen(new EditShapeScreen(this));
+                    Minecraft.getInstance().gui.setScreen(new EditShapeScreen(this));
                 })
                 .pos(this.width / 2 - 155, bottomY)
                 .size(150, 20)
@@ -112,7 +112,7 @@ public class ConfigScreen extends Screen {
 
         addRenderableWidget(Button
                 .builder(Component.literal("Done"), _ -> {
-                    Minecraft.getInstance().setScreen(parent);
+                    Minecraft.getInstance().gui.setScreen(parent);
                 })
                 .pos(this.width / 2 + 5, bottomY)
                 .size(150, 20)

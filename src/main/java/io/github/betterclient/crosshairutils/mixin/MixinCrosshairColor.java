@@ -5,6 +5,7 @@ import io.github.betterclient.crosshairutils.CrosshairUtils;
 import io.github.betterclient.crosshairutils.config.Config;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.Hud;
 import net.minecraft.resources.Identifier;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -13,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 
 import java.awt.*;
 
-@Mixin(Gui.class)
+@Mixin(Hud.class)
 public class MixinCrosshairColor {
     @Unique
     private static final Config config = Config.getInstance();
@@ -21,7 +22,7 @@ public class MixinCrosshairColor {
     @Redirect(method = "extractCrosshair", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphicsExtractor;blitSprite(Lcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/resources/Identifier;IIII)V", ordinal = 0))
     public void onRenderCrosshair(GuiGraphicsExtractor instance, RenderPipeline renderPipeline, Identifier location, int x, int y, int width, int height) {
         Color crosshairColor = config.getCrosshairColor();
-        if (CrosshairUtils.customTextures.contains(location)) {
+        if (location != null && CrosshairUtils.customTextures.contains(location)) {
             instance.blit(
                     renderPipeline,
                     location,

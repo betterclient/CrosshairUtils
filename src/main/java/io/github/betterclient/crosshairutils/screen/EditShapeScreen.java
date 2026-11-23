@@ -158,7 +158,7 @@ public class EditShapeScreen extends Screen {
 
         int bottomY = this.height - 30;
         addRenderableWidget(Button
-                .builder(Component.literal("Done"), _ -> Minecraft.getInstance().setScreen(parent))
+                .builder(Component.literal("Done"), _ -> Minecraft.getInstance().gui.setScreen(parent))
                 .pos(this.width / 2 - 75, bottomY)
                 .size(150, 20)
                 .build()
@@ -307,9 +307,9 @@ public class EditShapeScreen extends Screen {
     }
 
     private void askForConsent(String text, Runnable task) {
-        Minecraft.getInstance().setScreen(new ConfirmScreen(t -> {
+        Minecraft.getInstance().gui.setScreen(new ConfirmScreen(t -> {
             if (t) task.run();
-            Minecraft.getInstance().setScreen(this);
+            Minecraft.getInstance().gui.setScreen(this);
         }, Component.empty(), Component.literal(text)));
     }
 

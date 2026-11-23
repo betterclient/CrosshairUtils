@@ -3,8 +3,7 @@ package io.github.betterclient.crosshairutils.mixin;
 import com.mojang.blaze3d.pipeline.BlendFunction;
 import com.mojang.blaze3d.pipeline.ColorTargetState;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.platform.DestFactor;
-import com.mojang.blaze3d.platform.SourceFactor;
+import com.mojang.blaze3d.platform.BlendFactor;
 import io.github.betterclient.crosshairutils.CrosshairUtils;
 import io.github.betterclient.crosshairutils.config.Config;
 import io.github.betterclient.crosshairutils.config.CrossShape;
@@ -12,6 +11,7 @@ import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.Hud;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.resources.Identifier;
 import org.objectweb.asm.Opcodes;
@@ -24,11 +24,12 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(Gui.class)
+@Mixin(Hud.class)
 public class MixinGui {
-    @Shadow
     @Final
+    @Shadow
     private static Identifier CROSSHAIR_SPRITE;
+
     @Unique
     private static final Config config = Config.getInstance();
     @Unique
@@ -43,7 +44,7 @@ public class MixinGui {
     private static final RenderPipeline CROSSHAIR_NORMAL = RenderPipelines.register(
             RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
                     .withLocation("pipeline/crosshair_normal")
-                    .withColorTargetState(new ColorTargetState(new BlendFunction(SourceFactor.ONE, DestFactor.ZERO)))
+                    .withColorTargetState(new ColorTargetState(new BlendFunction(BlendFactor.ONE, BlendFactor.ZERO)))
                     .build()
     );
 
@@ -54,7 +55,7 @@ public class MixinGui {
         }
     }
 
-    @Redirect(method = "extractCrosshair", at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/Gui;CROSSHAIR_SPRITE:Lnet/minecraft/resources/Identifier;", opcode = Opcodes.GETSTATIC))
+    @Redirect(method = "extractCrosshair", at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/Hud;CROSSHAIR_SPRITE:Lnet/minecraft/resources/Identifier;", opcode = Opcodes.GETSTATIC))
     public Identifier redirectCrosshairSprite() {
         Minecraft mc = Minecraft.getInstance();
         return switch (mc.hitResult.getType()) {
